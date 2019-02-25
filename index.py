@@ -4,7 +4,7 @@ import discord
 import asyncio
 from discord.ext.commands import Bot
 from discord.ext import commands
-from django.conf import settings
+from oxem_heroes.settings import settings
 
 client = commands.Bot(command_prefix="?")
 
@@ -15,7 +15,6 @@ async def on_ready():
     print(client.user.name)
     print(client.user.id)
     print('------')
-    settings.configure()
     print(settings.TOKEN)
 
 
