@@ -1,0 +1,17 @@
+# python
+__pycache__
+*.pyc
+
+/env
+
+*.db
+
+# logging
+*.log
+
+
+# uploads/static
+/static/
+/media/
+
+settings.py
