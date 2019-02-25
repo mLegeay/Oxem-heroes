@@ -1,0 +1,27 @@
+# Vagrantfile de developpement.
+
+Vagrant.configure("2") do |config|
+
+    config.vm.box = "centos/7"
+    config.vm.box_check_update = true
+    config.ssh.insert_key = false
+    config.ssh.forward_agent = true
+    config.vm.synced_folder "..", "/srv/botOxem"
+
+    config.vm.provider "virtualbox" do |v|
+        v.name = "botOxem"
+    end
+
+    config.vm.network "forwarded_port", guest: 8000, host: 8000
+    config.vm.network "forwarded_port", guest: 80, host: 8080
+
+    config.vm.provision "1.provision-yum", type: "shell" do |s|
+        s.privileged = true
+        s.path = "provision-bootstrap-all.sh"
+    end
+
+    config.vm.provision "2.python-venv", type: "shell" do |s|
+        s.privileged = false
+        s.path = "provision-python-venv.sh"
+    end
+end
