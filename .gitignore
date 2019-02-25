@@ -15,3 +15,5 @@ __pycache__
 /media/
 
 settings.py
+
+nohup.out
