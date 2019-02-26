@@ -2,9 +2,10 @@
 
 import discord
 import asyncio
+
 from discord.ext.commands import Bot
 from discord.ext import commands
-from oxem_heroes.settings import settings
+from django.conf import settings
 
 client = commands.Bot(command_prefix="?")
 
@@ -20,6 +21,7 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
+    print(message.author)
     if message.content.startswith('!test'):
         counter = 0
         tmp = await client.send_message(message.channel, 'Calculating messages...')
@@ -32,4 +34,4 @@ async def on_message(message):
         await asyncio.sleep(5)
         await client.send_message(message.channel, 'Done sleeping')
 
-client.run('NTQ5NTk1MzQ0MzQ3MDcwNDY0.D1WKFQ.D4zlIorHPwjjNWeqd5CrywjHb7o')
+client.run(settings.TOKEN)

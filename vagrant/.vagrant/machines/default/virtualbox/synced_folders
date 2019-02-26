@@ -1,0 +1,1 @@
+{"rsync":{"/vagrant":{"type":"rsync","guestpath":"/vagrant","hostpath":"C:/Users/mlegeay/Documents/GitHub/Oxem-heroes/vagrant","disabled":false,"__vagrantfile":true,"owner":"vagrant","group":"vagrant"}},"virtualbox":{"/srv/botOxem":{"guestpath":"/srv/botOxem","hostpath":"C:/Users/mlegeay/Documents/GitHub/Oxem-heroes","disabled":false,"__vagrantfile":true}}}
