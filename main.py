@@ -7,6 +7,8 @@ from discord.ext.commands import Bot
 from discord.ext import commands
 from django.conf import settings
 
+from oxemHeroes.bot.models import Member, Game
+
 client = commands.Bot(command_prefix="?")
 
 
@@ -21,7 +23,7 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
-    print(message.author)
+    print(Game.objects.from_message(message))
     if message.content.startswith('!test'):
         counter = 0
         tmp = await client.send_message(message.channel, 'Calculating messages...')
