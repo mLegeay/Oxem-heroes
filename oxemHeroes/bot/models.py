@@ -86,31 +86,11 @@ class GameMemberQuerySet(models.QuerySet):
 
         return gameMember
 
-    def _get_level(self, xp):
-        for key, value in enumerate(XP_REQUIRE):
-            if xp < key:
-                return key
-        return XP_REQUIRE.keys()[-1]
-
     def from_message(self, message):
         return self._get_gameMember(message.author)
 
     def from_discord(self, discord_user):
         return self._get_gameMember(discord_user)
-
-    def add_silver(self, silver):
-        self.silver += silver
-        Game.objects.get_game().add_silver(silver)
-
-    def add_experience(self, experience):
-        self.experience = experience
-
-    def get_experience(self, GameMember):
-        level = self._get_level(GameMember.experience)
-        return XP.format(LEVEL_LIST[level], level, GameMember.experience)
-
-    def get_silver(self):
-        return SILVER_USER.format(self.member.name, self.silver)
 
     def create_character(self, message, name):
         member, created = Member.objects.from_message(message)
@@ -141,6 +121,26 @@ class GameMember(models.Model):
         """Override de la méthode __str__."""
 
         return '{0} - xp : {1} - silver : {2}'.format(self.member.name, self.experience, self.silver)
+
+    def _get_level(self, xp):
+        for key, value in enumerate(XP_REQUIRE):
+            if xp < key:
+                return key
+        return XP_REQUIRE.keys()[-1]
+
+    def add_silver(self, silver):
+        self.silver += silver
+        Game.objects.get_game().add_silver(silver)
+
+    def add_experience(self, experience):
+        self.experience = experience
+
+    def get_experience(self):
+        level = self._get_level(self.experience)
+        return XP.format(LEVEL_LIST[level], level, self.experience)
+
+    def get_silver(self):
+        return SILVER_USER.format(self.member.name, self.silver)
 
 
 class ClasseQuerySet(models.QuerySet):
@@ -260,13 +260,13 @@ class CommandQuerySet(models.QuerySet):
                     message = DEJA_CHOISIS
 
             elif command_name == "xp":
-                message = GameMember.objects.get_experience(GameMember.objects.from_message(send_message))
+                message = GameMember.objects.from_message(send_message).get_experience()
 
             elif command_name == "silver":
                 message = Game.objects.get_silver()
 
             elif command_name == "contribution":
-                message = GameMember.objects.get_silver()
+                message = GameMember.objects.from_message(send_message).get_silver()
 
             elif message.author.server_permissions.administrator:
                 if command_name == "bonusxp":
