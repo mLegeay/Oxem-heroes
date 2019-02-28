@@ -6,7 +6,8 @@ from .constants import (ADD_SILVER_USER,
                         CHOISIR_DONE,
                         CHOISIR_FAIL,
                         COMMAND_LIST,
-                        COMMAND_NOT_EXIST
+                        COMMAND_NOT_EXIST,
+                        DEJA_CHOISIS,
                         LEVEL_LIST,
                         SILVER_GLOBAL,
                         SILVER_USER,
@@ -75,11 +76,9 @@ class Member(models.Model):
 class GameMemberQuerySet(models.QuerySet):
     """Requête de base pour les informations de partie."""
 
-    def _get_gameMember(self, discord_user, message=None):
-        # Modifier la logique, on vérifie si il exsite par le get et
-        # si il existe pas on vérifie que la commande correspond bien à !chosir ...
+    def _get_gameMember(self, discord_user):
         created = False
-        member = Member.objects.from_discord(discord_user.id)
+        member = Member.objects.from_discord(discord_user)
         try:
             gameMember = self.get(member=member)
         except self.model.DoesNotExist:
@@ -94,10 +93,10 @@ class GameMemberQuerySet(models.QuerySet):
         return XP_REQUIRE.keys()[-1]
 
     def from_message(self, message):
-        return self._get_gameMember(message.author, message)[0]
+        return self._get_gameMember(message.author)
 
     def from_discord(self, discord_user):
-        return self._get_gameMember(discord_user)[0]
+        return self._get_gameMember(discord_user)
 
     def add_silver(self, silver):
         self.silver += silver
@@ -106,9 +105,9 @@ class GameMemberQuerySet(models.QuerySet):
     def add_experience(self, experience):
         self.experience = experience
 
-    def get_experience(self):
-        level = self._get_level(self.experience)
-        return message = XP.format(LEVEL_LIST[level], level, self.experience)
+    def get_experience(self, GameMember):
+        level = self._get_level(GameMember.experience)
+        return XP.format(LEVEL_LIST[level], level, GameMember.experience)
 
     def get_silver(self):
         return SILVER_USER.format(self.member.name, self.silver)
@@ -117,12 +116,12 @@ class GameMemberQuerySet(models.QuerySet):
         member, created = Member.objects.from_message(message)
         classe = Classe.objects.get_classe(name)
 
-        if not isinstance(classe, str) and created is True:
+        if not isinstance(classe, str):  # and created is True:
             gameMember = self.create(member=member, classe=classe)
         else:
             return CHOISIR_FAIL
 
-        return CHOISIR_DONE.format("name")
+        return CHOISIR_DONE.format(name)
 
 
 class GameMember(models.Model):
@@ -148,7 +147,7 @@ class ClasseQuerySet(models.QuerySet):
     """Requête de base pour les informations de partie."""
 
     def get_classe(self, name):
-        self.get(name=name)
+        return self.get(name=name)
 
 
 class Classe(models.Model):
@@ -182,7 +181,7 @@ class GameQuerySet(models.QuerySet):
         return self.all().first()
 
     def get_silver(self):
-        return SILVER_GLOBAL.format(self._get_game.silver)
+        return SILVER_GLOBAL.format(self._get_game().silver)
 
 
 class Game(models.Model):
@@ -251,14 +250,17 @@ class CommandQuerySet(models.QuerySet):
 
     def execute(self, send_message, command_name, parameters):
 
-        if command_name is in COMMAND_LIST:
-            command = self._get_command(command_name)[0]
+        if command_name in COMMAND_LIST:
+            command = self._get_command(command_name)
 
             if command.name == "choisir":
-                message = GameMember.objects.create_character(send_message, parameters[0])
+                if GameMember.objects.from_message(send_message) is None:
+                    message = GameMember.objects.create_character(send_message, parameters[0])
+                else:
+                    message = DEJA_CHOISIS
 
             elif command_name == "xp":
-                message = GameMember.objects.get_experience()
+                message = GameMember.objects.get_experience(GameMember.objects.from_message(send_message))
 
             elif command_name == "silver":
                 message = Game.objects.get_silver()

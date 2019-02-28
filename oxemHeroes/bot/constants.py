@@ -141,7 +141,7 @@ COMMAND_LIST = [
 
 COMMAND_NOT_EXIST = "La commande n'existe pas ..."
 
-SILVER_GLOBAL = "Nous disposons actuelement de {} Silver"
+SILVER_GLOBAL = "Nous disposons actuellement de {} Silver"
 
 SILVER_USER = "{} a récolté {} Silver pour la communauté !"
 
