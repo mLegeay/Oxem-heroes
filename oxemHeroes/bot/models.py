@@ -1,3 +1,5 @@
+import discord
+
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.utils import timezone
@@ -132,10 +134,12 @@ class GameMember(models.Model):
 
     def add_silver(self, silver):
         self.silver += silver
+        self.save(update_fields=['silver'])
         Game.objects.get_game().add_silver(silver)
 
     def add_experience(self, experience):
         self.experience = experience
+        self.save(update_fields=['experience'])
 
     def get_experience(self):
         level = self._get_level(self.experience)
@@ -283,7 +287,11 @@ class CommandQuerySet(models.QuerySet):
                         message = ADD_PARAM
 
                 elif command_name == "addsilver":
-                    gameMember = GameMember.objects.from_discord(send_message.mentions[0].id)
+                    if len(parameters) == 2 and isinstance(send_message.mentions[0], discord.member.Member):
+                        print(type(send_message.mentions[0]))
+                        gameMember = GameMember.objects.from_discord(send_message.mentions[0].id)
+                    else:
+                        message = ADD_PARAM
 
                     if gameMember is not None:
                         message = gameMember.add_silver(parameters[0])

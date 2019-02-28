@@ -137,6 +137,7 @@ COMMAND_LIST = [
     "silver",
     "contribution",
     "bonusxp",
+    "addsilver",
     "participer"
 ]
 
