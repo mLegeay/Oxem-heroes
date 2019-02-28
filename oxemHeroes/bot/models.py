@@ -2,7 +2,9 @@ from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.utils import timezone
 
-from .constants import (ADD_SILVER_USER,
+from .constants import (ADD_PARAM,
+                        ADD_SILVER_USER,
+                        BONUS_XP,
                         CHOISIR_DONE,
                         CHOISIR_FAIL,
                         COMMAND_LIST,
@@ -172,10 +174,15 @@ class GameQuerySet(models.QuerySet):
     """Requête de base pour les informations de partie."""
 
     def add_silver(self, silver):
-        self.silver += silver
+        game = self._get_game()
+        game.silver += silver
+        game.save(update_fields=['silver'])
 
     def alter_xp(self, bonus_xp):
-        self.bonus_xp = bonus_xp
+        game = self._get_game()
+        game.bonus_xp = bonus_xp
+        game.save(update_fields=['bonus_xp'])
+        return BONUS_XP.format(self._get_game().bonus_xp)
 
     def _get_game(self):
         return self.all().first()
@@ -268,9 +275,12 @@ class CommandQuerySet(models.QuerySet):
             elif command_name == "contribution":
                 message = GameMember.objects.from_message(send_message).get_silver()
 
-            elif message.author.server_permissions.administrator:
+            elif send_message.author.guild_permissions.administrator:
                 if command_name == "bonusxp":
-                    message = Game.objects.get_game().alter_xp(parameters[0])
+                    if parameters:
+                        message = Game.objects.alter_xp(parameters[0])
+                    else:
+                        message = ADD_PARAM
 
                 elif command_name == "addsilver":
                     gameMember = GameMember.objects.from_discord(send_message.mentions[0].id)

@@ -136,13 +136,18 @@ COMMAND_LIST = [
     "competence",
     "silver",
     "contribution",
+    "bonusxp",
     "participer"
 ]
 
 COMMAND_NOT_EXIST = "La commande n'existe pas ..."
+
+BONUS_XP = "Le bonus est de {}%. Pour le retirer, !bonusxp 0"
 
 SILVER_GLOBAL = "Nous disposons actuellement de {} Silver"
 
 SILVER_USER = "{} a récolté {} Silver pour la communauté !"
 
 ADD_SILVER_USER = "Ce joueur n'existe pas"
+
+ADD_PARAM = "Merci de renseigner tout les paramètres."
