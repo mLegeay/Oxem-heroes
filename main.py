@@ -21,17 +21,21 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
-    print(Game.objects.from_message(message))
-    if(message.author.bot) return
 
-    if not message.content.startswith('!') return
+    if(message.author.bot):
+        return
+
+    if not message.content.startswith('!'):
+        return
 
     command = message.content[1:].split(' ')[0]
     parameters = message.content[1:].split(' ')
     parameters.pop(0)
 
+    command = None if len(command) == 0 else command
+
     if command is not None:
-        Command.objects.execute(message, command, parameters)
+        await message.channel.send(Command.objects.execute(message, command, parameters))
 
 
 client.run(settings.TOKEN)
