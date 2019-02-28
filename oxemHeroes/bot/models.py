@@ -2,6 +2,27 @@ from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.utils import timezone
 
+from .constants import (ADD_SILVER_USER,
+                        CHOISIR_DONE,
+                        CHOISIR_FAIL,
+                        COMMAND_LIST,
+                        COMMAND_NOT_EXIST
+                        LEVEL_LIST,
+                        SILVER_GLOBAL,
+                        SILVER_USER,
+                        XP,
+                        XP_REQUIRE)
+
+
+class EventsLog(models.Model):
+    """Modèle du journal de log."""
+
+    date_created = models.DateTimeField(default=timezone.now,
+                                        db_index=True,
+                                        verbose_name="Date de l'erreur")
+    error = models.TextField(null=False)
+    command = models.CharField(max_length=100, null=False)
+
 
 class MemberQuerySet(models.QuerySet):
     """Requête de base pour les membres."""
@@ -21,6 +42,9 @@ class MemberQuerySet(models.QuerySet):
                                  joined_at=discord_user.joined_at)
             created = True
 
+        except Exception as error:
+            EventsLog.objects.create(error=error, command="get_member")
+
         return member, created
 
     def from_message(self, message):
@@ -38,7 +62,6 @@ class Member(models.Model):
     joined_at = models.DateTimeField()
 
     discriminator = models.CharField(max_length=10)
-    avatar = models.CharField(max_length=255, null=True)
     bot = models.BooleanField(default=False)
 
     objects = MemberQuerySet.as_manager()
@@ -49,44 +72,131 @@ class Member(models.Model):
         return '{0}#{1}'.format(self.name, self.discriminator)
 
 
-class GameQuerySet(models.QuerySet):
+class GameMemberQuerySet(models.QuerySet):
     """Requête de base pour les informations de partie."""
 
-    def _get_game(self, discord_user):
-
+    def _get_gameMember(self, discord_user, message=None):
+        # Modifier la logique, on vérifie si il exsite par le get et
+        # si il existe pas on vérifie que la commande correspond bien à !chosir ...
         created = False
         member = Member.objects.from_discord(discord_user.id)
         try:
-            game = self.get(member=member)
+            gameMember = self.get(member=member)
         except self.model.DoesNotExist:
-            game = self.create(member=member)
-            created = True
+            return None
 
-        return game, created
+        return gameMember
+
+    def _get_level(self, xp):
+        for key, value in enumerate(XP_REQUIRE):
+            if xp < key:
+                return key
+        return XP_REQUIRE.keys()[-1]
 
     def from_message(self, message):
-        return self._get_game(message.author)[0]
+        return self._get_gameMember(message.author, message)[0]
 
     def from_discord(self, discord_user):
-        return self._get_game(discord_user)[0]
+        return self._get_gameMember(discord_user)[0]
+
+    def add_silver(self, silver):
+        self.silver += silver
+        Game.objects.get_game().add_silver(silver)
+
+    def add_experience(self, experience):
+        self.experience = experience
+
+    def get_experience(self):
+        level = self._get_level(self.experience)
+        return message = XP.format(LEVEL_LIST[level], level, self.experience)
+
+    def get_silver(self):
+        return SILVER_USER.format(self.member.name, self.silver)
+
+    def create_character(self, message, name):
+        member, created = Member.objects.from_message(message)
+        classe = Classe.objects.get_classe(name)
+
+        if not isinstance(classe, str) and created is True:
+            gameMember = self.create(member=member, classe=classe)
+        else:
+            return CHOISIR_FAIL
+
+        return CHOISIR_DONE.format("name")
 
 
-class Game(models.Model):
+class GameMember(models.Model):
     """Modèle des informations sur les joueurs jouant à OxemHeroes."""
 
-    member = models.ForeignKey(on_delete=models.CASCADE, to='Member', null=False)
+    member = models.ForeignKey(on_delete=models.CASCADE, to='Member', null=False, unique=True)
+    classe = models.ForeignKey(on_delete=models.CASCADE, to='Classe', null=False)
     joined_at = models.DateTimeField(default=timezone.now,
                                      verbose_name="Date de création")
 
     experience = models.IntegerField(default=0)
     silver = models.IntegerField(default=0)
 
-    objects = GameQuerySet.as_manager()
+    objects = GameMemberQuerySet.as_manager()
 
     def __str__(self):
         """Override de la méthode __str__."""
 
         return '{0} - xp : {1} - silver : {2}'.format(self.member.name, self.experience, self.silver)
+
+
+class ClasseQuerySet(models.QuerySet):
+    """Requête de base pour les informations de partie."""
+
+    def get_classe(self, name):
+        self.get(name=name)
+
+
+class Classe(models.Model):
+    """Modèle des classes d'OxemHeroes."""
+
+    name = models.CharField(max_length=50, unique=True)
+
+    min_xp_comp = models.IntegerField(default=0)
+    max_xp_comp = models.IntegerField(default=0)
+    min_silver_comp = models.IntegerField(default=0)
+    max_silver_comp = models.IntegerField(default=0)
+
+    objects = ClasseQuerySet.as_manager()
+
+    def __str__(self):
+        """Override de la méthode __str__."""
+
+        return '{0}'.format(self.name)
+
+
+class GameQuerySet(models.QuerySet):
+    """Requête de base pour les informations de partie."""
+
+    def add_silver(self, silver):
+        self.silver += silver
+
+    def alter_xp(self, bonus_xp):
+        self.bonus_xp = bonus_xp
+
+    def _get_game(self):
+        return self.all().first()
+
+    def get_silver(self):
+        return SILVER_GLOBAL.format(self._get_game.silver)
+
+
+class Game(models.Model):
+    """Modèle des informations d'OxemHeroes."""
+
+    silver = models.IntegerField(default=0)
+    bonus_xp = models.IntegerField(default=0)
+
+    objects = GameQuerySet.as_manager()
+
+    def __str__(self):
+        """Override de la méthode __str__."""
+
+        return 'total silver : {1}'.format(self.silver)
 
 
 class CommandHistoryQuerySet(models.QuerySet):
@@ -131,12 +241,47 @@ class CommandQuerySet(models.QuerySet):
 
     def _get_command(self, command_name):
 
-        command = self.get(name=command_name)
+        try:
+            command = self.get(name=command_name)
+
+        except self.model.DoesNotExist:
+            command = None
 
         return command
 
-    def from_message(self, command_name):
-        return self._get_command(command_name)[0]
+    def execute(self, send_message, command_name, parameters):
+
+        if command_name is in COMMAND_LIST:
+            command = self._get_command(command_name)[0]
+
+            if command.name == "choisir":
+                message = GameMember.objects.create_character(send_message, parameters[0])
+
+            elif command_name == "xp":
+                message = GameMember.objects.get_experience()
+
+            elif command_name == "silver":
+                message = Game.objects.get_silver()
+
+            elif command_name == "contribution":
+                message = GameMember.objects.get_silver()
+
+            elif message.author.server_permissions.administrator:
+                if command_name == "bonusxp":
+                    message = Game.objects.get_game().alter_xp(parameters[0])
+
+                elif command_name == "addsilver":
+                    gameMember = GameMember.objects.from_discord(send_message.mentions[0].id)
+
+                    if gameMember is not None:
+                        message = gameMember.add_silver(parameters[0])
+                    else:
+                        message = ADD_SILVER_USER
+
+        else:
+            return COMMAND_NOT_EXIST
+
+        return message
 
 
 class Command(models.Model):
