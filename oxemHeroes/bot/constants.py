@@ -1,4 +1,5 @@
 CHOISIR_DONE = "Vous jouez désormais le héros {} !"
+DEJA_CHOISIS = "Vous avez déjà choisi un héros."
 CHOISIR_FAIL = "Veuillez indiquer un héros valide."
 
 XP = "【 {} 】 Niveau {} » {} XP"
@@ -76,7 +77,7 @@ LEVEL_LIST = {
     8: "Aventurier maladroit",
     9: "Dompteur d'Ours",
     10: "Protecteur",
-    11: "Banquier"
+    11: "Banquier",
     12: "Apprenti Magicien",
     13: "Archiviste",
     14: "Vagabond Solitaire",
