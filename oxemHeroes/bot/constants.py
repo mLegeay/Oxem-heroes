@@ -138,7 +138,9 @@ COMMAND_LIST = [
     "contribution",
     "bonusxp",
     "addsilver",
-    "participer"
+    "participer",
+    "aquillon",
+    "pillage"
 ]
 
 COMMAND_NOT_EXIST = "La commande n'existe pas ..."
@@ -151,4 +153,19 @@ SILVER_USER = "{} a récolté {} Silver pour la communauté !"
 
 ADD_SILVER_USER = "Ce joueur n'existe pas"
 
+ADD_SILVER_DONE = "Vous avez attribué {} silver à {}."
+
 ADD_PARAM = "Merci de renseigner tout les paramètres."
+
+SHOSI_CRIT = 0.20
+
+TALK_RATE_FAIL = 0.067
+
+SHOSI_COMP = "{} massacre ses ennemis en une unique attaque dévastatrice {} 【 {} XP 】 【 {} Silver 】"
+
+TALK_COMP = "{} après avoir pillé un village sans défense, allume un feu et fait cuire des merguez-chipolatas 【 {} XP 】 【 {} Silver 】"
+TALK_FAIL = "{} s'est fait repousser par la milice locale qui avait anticipée son attaque sur le village ▶️ Perte du bonus 【 {} XP 】 【 {} Silver 】"
+
+ON_CD = "Vous pourrez utiliser la commande dans {}mn"
+
+NON_AUTHORIZED = "Vous n'avez pas le droit d'utiliser cette commande, pas touche !"

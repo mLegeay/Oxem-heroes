@@ -19,10 +19,11 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=50, unique=True)),
-                ('min_xp_comp', models.IntegerField(default=0)),
-                ('max_xp_comp', models.IntegerField(default=0)),
+                ('xp_comp', models.IntegerField(default=0)),
                 ('min_silver_comp', models.IntegerField(default=0)),
                 ('max_silver_comp', models.IntegerField(default=0)),
+                ('cd_comp', models.IntegerField(default=0)),
+
             ],
         ),
         migrations.CreateModel(
@@ -42,7 +43,8 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('last_used', models.DateTimeField(default=django.utils.timezone.now, verbose_name='Date de création')),
-                ('command', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='bot.Command')),
+                ('command', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='bot.Command', unique=True)),
+                ('bonus', models.IntegerField(default=0, null=True)),
             ],
         ),
         migrations.CreateModel(
@@ -91,6 +93,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='commandhistory',
             name='member',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='bot.Member'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='bot.Member', unique=True),
         ),
     ]

@@ -11,9 +11,9 @@ from ..models import Classe
 def add_commands(apps, schema_editor):
     """Mise en places des commandes dans la BDD."""
 
-    Classe.objects.create(name="oxem")
-    Classe.objects.create(name="talkoran")
-    Classe.objects.create(name="shosizuke")
+    Classe.objects.create(name="oxem", xp_comp=10, min_silver_comp=20, max_silver_comp=40, cd_comp=60)
+    Classe.objects.create(name="talkoran", xp_comp=20, min_silver_comp=25, max_silver_comp=30, cd_comp=40)
+    Classe.objects.create(name="shosizuke", xp_comp=8, min_silver_comp=10, max_silver_comp=25, cd_comp=25)
 
 
 class Migration(migrations.Migration):

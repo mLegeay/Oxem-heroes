@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
+from unipath import Path
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -80,4 +81,15 @@ USE_L10N = True
 
 USE_TZ = True
 
+# Absolute filesystem path to the Django project directory
+DJANGO_ROOT = Path(__file__).ancestor(3)
+
+# Absolute filesystem path to the top-level project folder
+PROJECT_ROOT = DJANGO_ROOT.ancestor(2)
+
+# Path to public files (served by the web server)
+CWD = os.getcwd()
+STATIC_ROOT = os.path.join(CWD, "static")
+
+PUBLIC_ROOT = PROJECT_ROOT.child('public')
 STATIC_URL = '/static/'

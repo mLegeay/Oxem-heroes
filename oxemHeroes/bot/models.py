@@ -1,10 +1,16 @@
-import discord
+import os
+from datetime import datetime
+from random import *
 
+from django.conf import settings
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.utils import timezone
 
+import discord
+
 from .constants import (ADD_PARAM,
+                        ADD_SILVER_DONE,
                         ADD_SILVER_USER,
                         BONUS_XP,
                         CHOISIR_DONE,
@@ -13,8 +19,15 @@ from .constants import (ADD_PARAM,
                         COMMAND_NOT_EXIST,
                         DEJA_CHOISIS,
                         LEVEL_LIST,
+                        NON_AUTHORIZED,
+                        ON_CD,
+                        SHOSI_COMP,
+                        SHOSI_CRIT,
                         SILVER_GLOBAL,
                         SILVER_USER,
+                        TALK_COMP,
+                        TALK_FAIL,
+                        TALK_RATE_FAIL,
                         XP,
                         XP_REQUIRE)
 
@@ -53,7 +66,7 @@ class MemberQuerySet(models.QuerySet):
         return member, created
 
     def from_message(self, message):
-        return self._get_member(message.author)[0]
+        return self._get_member(message.author)
 
     def from_discord(self, discord_user):
         return self._get_member(discord_user)[0]
@@ -135,10 +148,11 @@ class GameMember(models.Model):
     def add_silver(self, silver):
         self.silver += silver
         self.save(update_fields=['silver'])
-        Game.objects.get_game().add_silver(silver)
+        Game.objects.add_silver(silver)
+        return ADD_SILVER_DONE.format(silver, self.member.name)
 
     def add_experience(self, experience):
-        self.experience = experience
+        self.experience = experience * (1 + Game.objects.get_bonusxp() / 100)
         self.save(update_fields=['experience'])
 
     def get_experience(self):
@@ -161,10 +175,11 @@ class Classe(models.Model):
 
     name = models.CharField(max_length=50, unique=True)
 
-    min_xp_comp = models.IntegerField(default=0)
-    max_xp_comp = models.IntegerField(default=0)
+    xp_comp = models.IntegerField(default=0)
     min_silver_comp = models.IntegerField(default=0)
     max_silver_comp = models.IntegerField(default=0)
+
+    cd_comp = models.IntegerField(default=0)  # Temps en minute
 
     objects = ClasseQuerySet.as_manager()
 
@@ -194,6 +209,9 @@ class GameQuerySet(models.QuerySet):
     def get_silver(self):
         return SILVER_GLOBAL.format(self._get_game().silver)
 
+    def get_bonusxp(self):
+        return self._get_game().bonus_xp
+
 
 class Game(models.Model):
     """Modèle des informations d'OxemHeroes."""
@@ -212,31 +230,57 @@ class Game(models.Model):
 class CommandHistoryQuerySet(models.QuerySet):
     """Requête de base pour l'historique des commandes."""
 
-    def _get_commandHistory(self, message):
+    def _get_commandHistory(self, command_name, message):
 
-        created = False
-        member = Member.objects.from_message(message)
-        command = Command.objects.from_message(message)
+        member, created = Member.objects.from_message(message)
+        command = Command.objects.get(name=command_name)
 
         try:
-            commandHistory = self.get(member=member)
+            commandHistory = self.get(member=member, command=command)
         except self.model.DoesNotExist:
             commandHistory = self.create(member=member, command=command)
             created = True
 
         return commandHistory, created
 
-    def from_message(self, message):
-        return self._get_commandHistory(message)[0]
+    def check_cooldown(self, command_name, message, cooldown, force=False):
+
+        commandHistory, created = self._get_commandHistory(command_name, message)
+        now = datetime.now()
+
+        can_use = True
+
+        if not created:
+            used_since = (now - commandHistory.last_used.replace(tzinfo=None)).total_seconds()//60 - cooldown
+            if used_since >= cooldown or force:
+                commandHistory.last_used = now
+                commandHistory.save(update_fields=['last_used'])
+            else:
+                can_use = used_since
+
+        return can_use
+
+    def update_bonus(self, command_name, message, bonus):
+
+        commandHistory, created = self._get_commandHistory(command_name, message)
+
+        if commandHistory.bonus <= 20:
+            commandHistory.bonus += bonus
+        if commandHistory.bonus > 20:
+            commandHistory.bonus = 20
+
+        commandHistory.save(update_fields=['bonus'])
 
 
 class CommandHistory(models.Model):
     """Modèle des commandes."""
 
-    member = models.ForeignKey(on_delete=models.CASCADE, to='Member', null=False)
-    command = models.ForeignKey(on_delete=models.CASCADE, to='Command', null=False)
+    member = models.ForeignKey(on_delete=models.CASCADE, to='Member', null=False, unique=True)
+    command = models.ForeignKey(on_delete=models.CASCADE, to='Command', null=False, unique=True)
     last_used = models.DateTimeField(default=timezone.now,
                                      verbose_name="Date de création")
+
+    bonus = models.IntegerField(default=0, null=True)
 
     objects = CommandHistoryQuerySet.as_manager()
 
@@ -261,25 +305,86 @@ class CommandQuerySet(models.QuerySet):
 
     def execute(self, send_message, command_name, parameters):
 
+        files = None
+
         if command_name in COMMAND_LIST:
             command = self._get_command(command_name)
 
+            gameMember = GameMember.objects.from_message(send_message)
             if command.name == "choisir":
-                if GameMember.objects.from_message(send_message) is None:
+                if gameMember is None and parameters:
                     message = GameMember.objects.create_character(send_message, parameters[0])
-                else:
+                elif gameMember is not None and parameters:
                     message = DEJA_CHOISIS
+                else:
+                    message = command.how_to
+                    files = []
+                    path = "{}/oxemHeroes/bot/static/image".format(settings.DJANGO_ROOT)
+                    for file in os.listdir(path):
+                        if os.path.isfile(os.path.join(path, file)):
+                            files.append(discord.File(os.path.join(path, file)))
+
+            elif gameMember is None:
+                message = "Commencez par choisir un héros."
 
             elif command_name == "xp":
-                message = GameMember.objects.from_message(send_message).get_experience()
+                message = gameMember.get_experience()
 
             elif command_name == "silver":
                 message = Game.objects.get_silver()
 
             elif command_name == "contribution":
-                message = GameMember.objects.from_message(send_message).get_silver()
+                message = gameMember.get_silver()
 
-            elif send_message.author.guild_permissions.administrator:
+            elif command_name == "justice":
+                message = GameMember.objects.from_message(send_message)
+
+            elif command_name == "pillage":
+                experience = gameMember.classe.xp_comp
+                silver = randint(gameMember.classe.min_silver_comp, gameMember.classe.max_silver_comp)
+
+                success = False if TALK_RATE_FAIL <= random() else True
+
+                if success:
+                    bonus = randint(MIN_BONUS_TALK, MAX_BONUS_TALK)
+
+                else:
+                    experience = 0
+                    silver = 0
+                    bonus = 0
+
+                can_use = CommandHistory.objects.check_cooldown(command_name, send_message, gameMember.classe.cd_comp)
+
+                if can_use is True:
+                    CommandHistory.objects.update_bonus(command_name, send_message, gameMember.classe.cd_comp, bonus)
+                    silver += bonus
+                    if success:
+                        message = TALK_COMP.format(gameMember.member.name, experience, silver)
+                    else:
+                        message = TALK_FAIL.format(gameMember.member.name, experience, silver)
+                else:
+                    message = ON_CD.format(int(gameMember.classe.cd_comp - can_use))
+
+            elif command_name == "aquillon" and gameMember.classe.name == "shosizuke":
+                is_crit = ''
+                force = False
+                experience = gameMember.classe.xp_comp
+                silver = randint(gameMember.classe.min_silver_comp, gameMember.classe.max_silver_comp)
+
+                if SHOSI_CRIT >= random():
+                    is_crit = ' ▶️ CRITIQUE '
+                    silver *= 2
+                    force = True
+
+                can_use = CommandHistory.objects.check_cooldown(command_name, send_message,
+                                                                gameMember.classe.cd_comp, force)
+
+                if can_use is True:
+                    message = SHOSI_COMP.format(gameMember.member.name, is_crit, experience, silver)
+                else:
+                    message = ON_CD.format(int(gameMember.classe.cd_comp - can_use))
+
+            elif send_message.author.guild_permissions.administrator == "cacajuete":
                 if command_name == "bonusxp":
                     if parameters:
                         message = Game.objects.alter_xp(parameters[0])
@@ -287,21 +392,23 @@ class CommandQuerySet(models.QuerySet):
                         message = ADD_PARAM
 
                 elif command_name == "addsilver":
-                    if len(parameters) == 2 and isinstance(send_message.mentions[0], discord.member.Member):
-                        print(type(send_message.mentions[0]))
-                        gameMember = GameMember.objects.from_discord(send_message.mentions[0].id)
+                    if len(parameters) == 2 and send_message.mentions:
+                        gameMember = GameMember.objects.from_discord(send_message.mentions[0])
+
+                        if gameMember is not None:
+                            message = gameMember.add_silver(int(parameters[0]))
+                        else:
+                            message = ADD_SILVER_USER
                     else:
                         message = ADD_PARAM
 
-                    if gameMember is not None:
-                        message = gameMember.add_silver(parameters[0])
-                    else:
-                        message = ADD_SILVER_USER
+            else:
+                message = NON_AUTHORIZED
 
         else:
-            return COMMAND_NOT_EXIST
+            return COMMAND_NOT_EXIST, files
 
-        return message
+        return message, files
 
 
 class Command(models.Model):

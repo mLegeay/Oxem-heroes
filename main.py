@@ -35,7 +35,8 @@ async def on_message(message):
     command = None if len(command) == 0 else command
 
     if command is not None:
-        await message.channel.send(Command.objects.execute(message, command, parameters))
+        content, files = Command.objects.execute(message, command, parameters)
+        await message.channel.send(content=content, files=files)
 
 
 client.run(settings.TOKEN)

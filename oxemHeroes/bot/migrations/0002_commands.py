@@ -34,8 +34,20 @@ def add_commands(apps, schema_editor):
 
     Command.objects.create(name="addsilver",
                            description="Permet d'attribuer des silvers à un joueur.",
-                           how_to="!addsilver <@joueur> (retirer les <> et indiquer le joueur avec son @).",
+                           how_to="!addsilver <25> <@joueur> (retirer les <> et indiquer le joueur avec son @).",
                            admin_command=True)
+
+    Command.objects.create(name="aquillon",
+                           description="Permet d'utiliser Aquillon de Shosizuke.",
+                           how_to="!aquillon")
+
+    Command.objects.create(name="justice",
+                           description="Permet d'utiliser Justice de Shosizuke.",
+                           how_to="!justice")
+
+    Command.objects.create(name="pillage",
+                           description="Permet d'utiliser Pillage de Shosizuke.",
+                           how_to="!pillage")
 
 
 class Migration(migrations.Migration):
