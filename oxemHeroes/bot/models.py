@@ -349,8 +349,6 @@ class CommandQuerySet(models.QuerySet):
                     bonus = randint(MIN_BONUS_TALK, MAX_BONUS_TALK)
 
                 else:
-                    experience = 0
-                    silver = 0
                     bonus = 0
 
                 can_use = CommandHistory.objects.check_cooldown(command_name, send_message, gameMember.classe.cd_comp)
