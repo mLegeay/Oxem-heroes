@@ -12,6 +12,7 @@ import discord
 from .constants import (ADD_PARAM,
                         ADD_SILVER_DONE,
                         ADD_SILVER_USER,
+                        BONUS_OXEM,
                         BONUS_XP,
                         CHOISIR_DONE,
                         CHOISIR_FAIL,
@@ -19,6 +20,8 @@ from .constants import (ADD_PARAM,
                         COMMAND_NOT_EXIST,
                         DEJA_CHOISIS,
                         LEVEL_LIST,
+                        MIN_BONUS_TALK,
+                        MAX_BONUS_TALK,
                         NON_AUTHORIZED,
                         ON_CD,
                         SHOSI_COMP,
@@ -269,7 +272,12 @@ class CommandHistoryQuerySet(models.QuerySet):
         if commandHistory.bonus > 20:
             commandHistory.bonus = 20
 
+        if bonus == -1:
+            commandHistory.bonus = 0
+
         commandHistory.save(update_fields=['bonus'])
+
+        return commandHistory.bonus
 
 
 class CommandHistory(models.Model):
@@ -283,6 +291,9 @@ class CommandHistory(models.Model):
     bonus = models.IntegerField(default=0, null=True)
 
     objects = CommandHistoryQuerySet.as_manager()
+
+    class Meta:
+        unique_together = ('member', 'command',)
 
     def __str__(self):
         """Override de la méthode __str__."""
@@ -337,25 +348,41 @@ class CommandQuerySet(models.QuerySet):
                 message = gameMember.get_silver()
 
             elif command_name == "justice":
-                message = GameMember.objects.from_message(send_message)
-
-            elif command_name == "pillage":
                 experience = gameMember.classe.xp_comp
                 silver = randint(gameMember.classe.min_silver_comp, gameMember.classe.max_silver_comp)
 
-                success = False if TALK_RATE_FAIL <= random() else True
+                member_list = send_message.channel.members
+
+                bonus = int(len(list(filter(lambda connected: connected.status == discord.Status.online, member_list))) * BONUS_OXEM)
+
+                can_use = CommandHistory.objects.check_cooldown(command_name, send_message, gameMember.classe.cd_comp)
+
+                if can_use is True:
+                    silver += bonus
+
+                    if success:
+                        message = TALK_COMP.format(gameMember.member.name, experience, silver)
+                    else:
+                        message = TALK_FAIL.format(gameMember.member.name, experience, silver)
+                else:
+                    message = ON_CD.format(int(gameMember.classe.cd_comp - can_use))
+
+            elif command_name == "pillage" and gameMember.classe.name == "talkoran":
+                experience = gameMember.classe.xp_comp
+                silver = randint(gameMember.classe.min_silver_comp, gameMember.classe.max_silver_comp)
+
+                success = False if TALK_RATE_FAIL >= random() else True
 
                 if success:
                     bonus = randint(MIN_BONUS_TALK, MAX_BONUS_TALK)
 
                 else:
-                    bonus = 0
+                    bonus = -1
 
                 can_use = CommandHistory.objects.check_cooldown(command_name, send_message, gameMember.classe.cd_comp)
 
                 if can_use is True:
-                    CommandHistory.objects.update_bonus(command_name, send_message, gameMember.classe.cd_comp, bonus)
-                    silver += bonus
+                    silver += CommandHistory.objects.update_bonus(command_name, send_message, bonus)
                     if success:
                         message = TALK_COMP.format(gameMember.member.name, experience, silver)
                     else:

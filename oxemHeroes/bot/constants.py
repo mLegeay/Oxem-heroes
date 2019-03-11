@@ -140,7 +140,8 @@ COMMAND_LIST = [
     "addsilver",
     "participer",
     "aquillon",
-    "pillage"
+    "pillage",
+    "justice"
 ]
 
 COMMAND_NOT_EXIST = "La commande n'existe pas ..."
@@ -157,7 +158,12 @@ ADD_SILVER_DONE = "Vous avez attribué {} silver à {}."
 
 ADD_PARAM = "Merci de renseigner tout les paramètres."
 
+BONUS_OXEM = 0.05
+
 SHOSI_CRIT = 0.20
+
+MIN_BONUS_TALK = 0
+MAX_BONUS_TALK = 5
 
 TALK_RATE_FAIL = 0.067
 
