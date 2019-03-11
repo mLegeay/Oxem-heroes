@@ -167,6 +167,8 @@ MAX_BONUS_TALK = 5
 
 TALK_RATE_FAIL = 0.067
 
+OXEM_COMP = "{} déploie la puissance de la lumière pour purger ses ennemis 【 {} XP 】 【 {} Silver 】"
+
 SHOSI_COMP = "{} massacre ses ennemis en une unique attaque dévastatrice {} 【 {} XP 】 【 {} Silver 】"
 
 TALK_COMP = "{} après avoir pillé un village sans défense, allume un feu et fait cuire des merguez-chipolatas 【 {} XP 】 【 {} Silver 】"

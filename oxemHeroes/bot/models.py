@@ -24,6 +24,7 @@ from .constants import (ADD_PARAM,
                         MAX_BONUS_TALK,
                         NON_AUTHORIZED,
                         ON_CD,
+                        OXEM_COMP,
                         SHOSI_COMP,
                         SHOSI_CRIT,
                         SILVER_GLOBAL,
@@ -283,8 +284,8 @@ class CommandHistoryQuerySet(models.QuerySet):
 class CommandHistory(models.Model):
     """Modèle des commandes."""
 
-    member = models.ForeignKey(on_delete=models.CASCADE, to='Member', null=False, unique=True)
-    command = models.ForeignKey(on_delete=models.CASCADE, to='Command', null=False, unique=True)
+    member = models.ForeignKey(on_delete=models.CASCADE, to='Member', null=False)
+    command = models.ForeignKey(on_delete=models.CASCADE, to='Command', null=False)
     last_used = models.DateTimeField(default=timezone.now,
                                      verbose_name="Date de création")
 
@@ -347,23 +348,21 @@ class CommandQuerySet(models.QuerySet):
             elif command_name == "contribution":
                 message = gameMember.get_silver()
 
-            elif command_name == "justice":
+            elif command_name == "justice" and gameMember.classe.name == "oxem":
                 experience = gameMember.classe.xp_comp
                 silver = randint(gameMember.classe.min_silver_comp, gameMember.classe.max_silver_comp)
 
                 member_list = send_message.channel.members
 
-                bonus = int(len(list(filter(lambda connected: connected.status == discord.Status.online, member_list))) * BONUS_OXEM)
+                bonus = int(len(list(filter(lambda connected: connected.status == discord.Status.online,
+                                            member_list))) * BONUS_OXEM)
 
                 can_use = CommandHistory.objects.check_cooldown(command_name, send_message, gameMember.classe.cd_comp)
 
                 if can_use is True:
-                    silver += bonus
+                    experience += bonus
 
-                    if success:
-                        message = TALK_COMP.format(gameMember.member.name, experience, silver)
-                    else:
-                        message = TALK_FAIL.format(gameMember.member.name, experience, silver)
+                    message = OXEM_COMP.format(gameMember.member.name, experience, silver)
                 else:
                     message = ON_CD.format(int(gameMember.classe.cd_comp - can_use))
 
