@@ -325,7 +325,7 @@ class CommandQuerySet(models.QuerySet):
             gameMember = GameMember.objects.from_message(send_message)
             if command.name == "choisir":
                 if gameMember is None and parameters:
-                    message = GameMember.objects.create_character(send_message, parameters[0])
+                    message = GameMember.objects.create_character(send_message, parameters[0].lower())
                 elif gameMember is not None and parameters:
                     message = DEJA_CHOISIS
                 else:
