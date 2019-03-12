@@ -9,30 +9,15 @@ from django.utils import timezone
 
 import discord
 
-from .constants import (ADD_PARAM,
-                        ADD_SILVER_DONE,
-                        ADD_SILVER_USER,
-                        BONUS_OXEM,
-                        BONUS_XP,
-                        CHOISIR_DONE,
-                        CHOISIR_FAIL,
+from .constants import (ADMIN_DONE,
                         COMMAND_LIST,
-                        COMMAND_NOT_EXIST,
-                        DEJA_CHOISIS,
+                        DONE,
+                        ERRORS,
+                        HERO_LIST,
                         LEVEL_LIST,
-                        MIN_BONUS_TALK,
-                        MAX_BONUS_TALK,
-                        NON_AUTHORIZED,
-                        ON_CD,
-                        OXEM_COMP,
-                        SHOSI_COMP,
-                        SHOSI_CRIT,
-                        SILVER_GLOBAL,
-                        SILVER_USER,
-                        TALK_COMP,
-                        TALK_FAIL,
-                        TALK_RATE_FAIL,
-                        XP,
+                        OXEM,
+                        SHOSIZUKE,
+                        TALKORAN,
                         XP_REQUIRE)
 
 
@@ -117,12 +102,10 @@ class GameMemberQuerySet(models.QuerySet):
         member, created = Member.objects.from_message(message)
         classe = Classe.objects.get_classe(name)
 
-        if not isinstance(classe, str):  # and created is True:
+        if not isinstance(classe, str):
             gameMember = self.create(member=member, classe=classe)
-        else:
-            return CHOISIR_FAIL
 
-        return CHOISIR_DONE.format(name)
+        return DONE['choisir'].format(name)
 
 
 class GameMember(models.Model):
@@ -135,6 +118,7 @@ class GameMember(models.Model):
 
     experience = models.IntegerField(default=0)
     silver = models.IntegerField(default=0)
+    token = models.IntegerField(default=0)
 
     objects = GameMemberQuerySet.as_manager()
 
@@ -145,7 +129,7 @@ class GameMember(models.Model):
 
     def _get_level(self, xp):
         for key, value in enumerate(XP_REQUIRE):
-            if xp < key:
+            if xp < value:
                 return key
         return XP_REQUIRE.keys()[-1]
 
@@ -153,18 +137,29 @@ class GameMember(models.Model):
         self.silver += silver
         self.save(update_fields=['silver'])
         Game.objects.add_silver(silver)
-        return ADD_SILVER_DONE.format(silver, self.member.name)
+        return ADMIN_DONE['add_silver'].format(silver, self.member.name)
+
+    def add_token(self, token):
+        self.token += token
+        self.save(update_fields=['token'])
+        return ADMIN_DONE['add_token'].format(token, self.member.name)
 
     def add_experience(self, experience):
-        self.experience = experience * (1 + Game.objects.get_bonusxp() / 100)
+        experience = experience * (1 + Game.objects.get_bonusxp() / 100)
+        self.experience += experience
         self.save(update_fields=['experience'])
 
+        return int(experience)
+
     def get_experience(self):
-        level = self._get_level(self.experience)
-        return XP.format(LEVEL_LIST[level], level, self.experience)
+        level = self._get_level(self.experience) + 1
+        return DONE['xp'].format(LEVEL_LIST[level], level, self.experience)
 
     def get_silver(self):
-        return SILVER_USER.format(self.member.name, self.silver)
+        return DONE['silver_user'].format(self.member.name, self.silver)
+
+    def get_token(self):
+        return DONE['token_user'].format(self.token)
 
 
 class ClasseQuerySet(models.QuerySet):
@@ -205,13 +200,13 @@ class GameQuerySet(models.QuerySet):
         game = self._get_game()
         game.bonus_xp = bonus_xp
         game.save(update_fields=['bonus_xp'])
-        return BONUS_XP.format(self._get_game().bonus_xp)
+        return ADMIN_DONE['bonus_xp'].format(self._get_game().bonus_xp)
 
     def _get_game(self):
         return self.all().first()
 
     def get_silver(self):
-        return SILVER_GLOBAL.format(self._get_game().silver)
+        return DONE['silver_global'].format(self._get_game().silver)
 
     def get_bonusxp(self):
         return self._get_game().bonus_xp
@@ -325,9 +320,12 @@ class CommandQuerySet(models.QuerySet):
             gameMember = GameMember.objects.from_message(send_message)
             if command.name == "choisir":
                 if gameMember is None and parameters:
-                    message = GameMember.objects.create_character(send_message, parameters[0].lower())
+                    if parameters[0].lower() in HERO_LIST:
+                        message = GameMember.objects.create_character(send_message, parameters[0].lower())
+                    else:
+                        message = ERRORS['hero_dne']
                 elif gameMember is not None and parameters:
-                    message = DEJA_CHOISIS
+                    message = ERRORS['deja_choisis']
                 else:
                     message = command.how_to
                     files = []
@@ -337,7 +335,7 @@ class CommandQuerySet(models.QuerySet):
                             files.append(discord.File(os.path.join(path, file)))
 
             elif gameMember is None:
-                message = "Commencez par choisir un héros."
+                message = ERRORS['not_a_player']
 
             elif command_name == "xp":
                 message = gameMember.get_experience()
@@ -348,6 +346,9 @@ class CommandQuerySet(models.QuerySet):
             elif command_name == "contribution":
                 message = gameMember.get_silver()
 
+            elif command_name == "jeton":
+                message = gameMember.get_token()
+
             elif command_name == "justice" and gameMember.classe.name == "oxem":
                 experience = gameMember.classe.xp_comp
                 silver = randint(gameMember.classe.min_silver_comp, gameMember.classe.max_silver_comp)
@@ -355,25 +356,28 @@ class CommandQuerySet(models.QuerySet):
                 member_list = send_message.channel.members
 
                 bonus = int(len(list(filter(lambda connected: connected.status == discord.Status.online,
-                                            member_list))) * BONUS_OXEM)
+                                            member_list))) * OXEM['bonus'])
 
                 can_use = CommandHistory.objects.check_cooldown(command_name, send_message, gameMember.classe.cd_comp)
 
                 if can_use is True:
                     experience += bonus
 
-                    message = OXEM_COMP.format(gameMember.member.name, experience, silver)
+                    experience = gameMember.add_experience(experience)
+                    gameMember.add_silver(silver)
+
+                    message = OXEM['comp_success'].format(gameMember.member.name, experience, silver)
                 else:
-                    message = ON_CD.format(int(gameMember.classe.cd_comp - can_use))
+                    message = ERRORS['on_cd'].format(int(gameMember.classe.cd_comp - can_use))
 
             elif command_name == "pillage" and gameMember.classe.name == "talkoran":
                 experience = gameMember.classe.xp_comp
                 silver = randint(gameMember.classe.min_silver_comp, gameMember.classe.max_silver_comp)
 
-                success = False if TALK_RATE_FAIL >= random() else True
+                success = False if TALKORAN['fail_rate'] >= random() else True
 
                 if success:
-                    bonus = randint(MIN_BONUS_TALK, MAX_BONUS_TALK)
+                    bonus = randint(TALKORAN['min_bonus'], TALKORAN['max_bonus'])
 
                 else:
                     bonus = -1
@@ -382,10 +386,14 @@ class CommandQuerySet(models.QuerySet):
 
                 if can_use is True:
                     silver += CommandHistory.objects.update_bonus(command_name, send_message, bonus)
+
+                    gameMember.add_experience(experience)
+                    gameMember.add_silver(silver)
+
                     if success:
-                        message = TALK_COMP.format(gameMember.member.name, experience, silver)
+                        message = TALKORAN['comp_success'].format(gameMember.member.name, experience, silver)
                     else:
-                        message = TALK_FAIL.format(gameMember.member.name, experience, silver)
+                        message = TALKORAN['comp_failed'].format(gameMember.member.name, experience, silver)
                 else:
                     message = ON_CD.format(int(gameMember.classe.cd_comp - can_use))
 
@@ -395,7 +403,7 @@ class CommandQuerySet(models.QuerySet):
                 experience = gameMember.classe.xp_comp
                 silver = randint(gameMember.classe.min_silver_comp, gameMember.classe.max_silver_comp)
 
-                if SHOSI_CRIT >= random():
+                if SHOSIZUKE['crit'] >= random():
                     is_crit = ' ▶️ CRITIQUE '
                     silver *= 2
                     force = True
@@ -404,16 +412,19 @@ class CommandQuerySet(models.QuerySet):
                                                                 gameMember.classe.cd_comp, force)
 
                 if can_use is True:
-                    message = SHOSI_COMP.format(gameMember.member.name, is_crit, experience, silver)
+                    gameMember.add_experience(experience)
+                    gameMember.add_silver(silver)
+
+                    message = SHOSIZUKE['comp_success'].format(gameMember.member.name, is_crit, experience, silver)
                 else:
                     message = ON_CD.format(int(gameMember.classe.cd_comp - can_use))
 
-            elif send_message.author.guild_permissions.administrator == "cacajuete":
+            elif send_message.author.guild_permissions.administrator:
                 if command_name == "bonusxp":
                     if parameters:
                         message = Game.objects.alter_xp(parameters[0])
                     else:
-                        message = ADD_PARAM
+                        message = command.how_to
 
                 elif command_name == "addsilver":
                     if len(parameters) == 2 and send_message.mentions:
@@ -422,15 +433,26 @@ class CommandQuerySet(models.QuerySet):
                         if gameMember is not None:
                             message = gameMember.add_silver(int(parameters[0]))
                         else:
-                            message = ADD_SILVER_USER
+                            message = ERRORS['player_dne']
                     else:
-                        message = ADD_PARAM
+                        message = command.how_to
+
+                elif command_name == "addjeton":
+                    if len(parameters) == 2 and send_message.mentions:
+                        gameMember = GameMember.objects.from_discord(send_message.mentions[0])
+
+                        if gameMember is not None:
+                            message = gameMember.add_token(int(parameters[0]))
+                        else:
+                            message = ERRORS['player_dne']
+                    else:
+                        message = command.how_to
 
             else:
-                message = NON_AUTHORIZED
+                message = ERRORS['non_authorized']
 
         else:
-            return COMMAND_NOT_EXIST, files
+            return ERRORS['command_dne'], files
 
         return message, files
 

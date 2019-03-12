@@ -1,6 +1,4 @@
 CHOISIR_DONE = "Vous jouez désormais le héros {} !"
-DEJA_CHOISIS = "Vous avez déjà choisi un héros."
-CHOISIR_FAIL = "Veuillez indiquer un héros valide."
 
 XP = "【 {} 】 Niveau {} » {} XP"
 
@@ -129,51 +127,95 @@ LEVEL_LIST = {
     60: "Grand Amiral de la Regalia",
 }
 
-
 COMMAND_LIST = [
+    "choisir",
+    "competence",
+    "contribution",
+    "jeton",
+    "silver",
+    "xp",
+    "addjeton",
+    "addsilver",
+    "bonusxp",
+    "participer",
+    "aquillon",
+    "justice",
+    "pillage",
+]
+
+PLAYER_COMMAND = [
     "xp",
     "choisir",
     "competence",
     "silver",
     "contribution",
-    "bonusxp",
-    "addsilver",
-    "participer",
-    "aquillon",
-    "pillage",
-    "justice"
+    "jeton",
 ]
 
-COMMAND_NOT_EXIST = "La commande n'existe pas ..."
+SKILL_LIST = [
+    "aquillon",
+    "justice",
+    "pillage",
+]
 
-BONUS_XP = "Le bonus est de {}%. Pour le retirer, !bonusxp 0"
+ADMIN_COMMAND_LIST = [
+    "addjeton",
+    "addsilver",
+    "bonusxp",
+]
+
+HERO_LIST = [
+    "oxem",
+    "shosizuke",
+    "talkoran",
+]
+
+OXEM = {
+    'bonus': 0.05,
+    'comp_success': "{} déploie la puissance de la lumière pour purger ses ennemis 【 {} XP 】 【 {} Silver 】",
+}
+
+SHOSIZUKE = {
+    'crit': 0.20,
+    'comp_success': "{} massacre ses ennemis en une unique attaque dévastatrice {} 【 {} XP 】 【 {} Silver 】",
+}
+
+TALKORAN = {
+    'fail_rate': 0.067,
+    'min_bonus': 0,
+    'max_bonus': 5,
+    'comp_success': ("{} après avoir pillé un village sans défense, " +
+                     "allume un feu et fait cuire des merguez-chipolatas 【 {} XP 】 【 {} Silver 】"),
+    'comp_failed': ("{} s'est fait repousser par la milice locale" +
+                    "qui avait anticipée son attaque sur le village ▶️ Perte du bonus 【 {} XP 】 【 {} Silver 】")
+}
+
+ADMIN_DONE = {
+    'add_silver': "Vous avez attribué {} silver à {}.",
+    'add_token': "Vous avez attribué {} jetons à {}.",
+    'bonus_xp': "Le bonus est de {}%. Pour le retirer, !bonusxp 0",
+}
+
+DONE = {
+    'choisir': "Vous jouez désormais le héros {} !",
+    'silver_global': "Nous disposons actuellement de {} Silver",
+    'silver_user': "{} a récolté {} Silver pour la communauté !",
+    'token_user': "Tu possèdes {} jetons.",
+    'xp': "【 {} 】 Niveau {} » {} XP",
+}
+
+ERRORS = {
+    'command_dne': "La commande n'existe pas ...",
+    'deja_choisis': "Vous avez déjà choisi un héros.",
+    'hero_dne': "Ce héros n'existe pas.",
+    'non_authorized': "Vous n'avez pas le droit d'utiliser cette commande, pas touche !",
+    'not_a_player': "Commencez par choisir un héros. (!choisir)",
+    'on_cd': "Vous pourrez utiliser la commande dans {}mn",
+    'player_dne': "Ce joueur n'existe pas",
+}
 
 SILVER_GLOBAL = "Nous disposons actuellement de {} Silver"
 
 SILVER_USER = "{} a récolté {} Silver pour la communauté !"
 
-ADD_SILVER_USER = "Ce joueur n'existe pas"
-
-ADD_SILVER_DONE = "Vous avez attribué {} silver à {}."
-
-ADD_PARAM = "Merci de renseigner tout les paramètres."
-
-BONUS_OXEM = 0.05
-
-SHOSI_CRIT = 0.20
-
-MIN_BONUS_TALK = 0
-MAX_BONUS_TALK = 5
-
-TALK_RATE_FAIL = 0.067
-
-OXEM_COMP = "{} déploie la puissance de la lumière pour purger ses ennemis 【 {} XP 】 【 {} Silver 】"
-
-SHOSI_COMP = "{} massacre ses ennemis en une unique attaque dévastatrice {} 【 {} XP 】 【 {} Silver 】"
-
-TALK_COMP = "{} après avoir pillé un village sans défense, allume un feu et fait cuire des merguez-chipolatas 【 {} XP 】 【 {} Silver 】"
-TALK_FAIL = "{} s'est fait repousser par la milice locale qui avait anticipée son attaque sur le village ▶️ Perte du bonus 【 {} XP 】 【 {} Silver 】"
-
-ON_CD = "Vous pourrez utiliser la commande dans {}mn"
-
-NON_AUTHORIZED = "Vous n'avez pas le droit d'utiliser cette commande, pas touche !"
+TOKEN_USER = "Tu possèdes {} jetons."

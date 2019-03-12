@@ -27,6 +27,10 @@ def add_commands(apps, schema_editor):
                            description="Permet d'afficher votre contribution aux silver totaux.",
                            how_to="!contribution")
 
+    Command.objects.create(name="jeton",
+                           description="Permet d'afficher votre quantité de jetons possédée.",
+                           how_to="!jeton")
+
     Command.objects.create(name="bonusxp",
                            description="Permet de modifier le bonus d'xp.",
                            how_to="!bonusxp <25> (retirer les <> et 25 pour 25%.)",
@@ -35,6 +39,11 @@ def add_commands(apps, schema_editor):
     Command.objects.create(name="addsilver",
                            description="Permet d'attribuer des silvers à un joueur.",
                            how_to="!addsilver <25> <@joueur> (retirer les <> et indiquer le joueur avec son @).",
+                           admin_command=True)
+
+    Command.objects.create(name="addjeton",
+                           description="Permet d'attribuer des jetons à un joueur.",
+                           how_to="!addjeton <25> <@joueur> (retirer les <> et indiquer le joueur avec son @).",
                            admin_command=True)
 
     Command.objects.create(name="aquillon",
