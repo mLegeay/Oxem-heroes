@@ -9,14 +9,17 @@ from django.utils import timezone
 
 import discord
 
-from .constants import (ADMIN_DONE,
+from .constants import (ADMIN_COMMAND_LIST,
+                        ADMIN_DONE,
                         COMMAND_LIST,
                         DONE,
                         ERRORS,
                         HERO_LIST,
                         LEVEL_LIST,
                         OXEM,
+                        PLAYER_COMMAND,
                         SHOSIZUKE,
+                        SKILL_LIST,
                         TALKORAN,
                         XP_REQUIRE)
 
@@ -318,108 +321,94 @@ class CommandQuerySet(models.QuerySet):
             command = self._get_command(command_name)
 
             gameMember = GameMember.objects.from_message(send_message)
-            if command.name == "choisir":
-                if gameMember is None and parameters:
-                    if parameters[0].lower() in HERO_LIST:
-                        message = GameMember.objects.create_character(send_message, parameters[0].lower())
+
+            if command_name in PLAYER_COMMAND or command_name in SKILL_LIST:
+                if command.name == "choisir":
+                    if gameMember is None and parameters:
+                        if parameters[0].lower() in HERO_LIST:
+                            message = GameMember.objects.create_character(send_message, parameters[0].lower())
+                        else:
+                            message = ERRORS['hero_dne']
+                    elif gameMember is not None and parameters:
+                        message = ERRORS['deja_choisis']
                     else:
-                        message = ERRORS['hero_dne']
-                elif gameMember is not None and parameters:
-                    message = ERRORS['deja_choisis']
-                else:
-                    message = command.how_to
-                    files = []
-                    path = "{}/oxemHeroes/bot/static/image".format(settings.DJANGO_ROOT)
-                    for file in os.listdir(path):
-                        if os.path.isfile(os.path.join(path, file)):
-                            files.append(discord.File(os.path.join(path, file)))
+                        message = command.how_to
+                        files = []
+                        path = "{}/oxemHeroes/bot/static/image".format(settings.DJANGO_ROOT)
+                        for file in os.listdir(path):
+                            if os.path.isfile(os.path.join(path, file)):
+                                files.append(discord.File(os.path.join(path, file)))
 
-            elif gameMember is None:
-                message = ERRORS['not_a_player']
+                elif gameMember is None:
+                    message = ERRORS['not_a_player']
 
-            elif command_name == "xp":
-                message = gameMember.get_experience()
+                elif command_name == "xp":
+                    message = gameMember.get_experience()
 
-            elif command_name == "silver":
-                message = Game.objects.get_silver()
+                elif command_name == "silver":
+                    message = Game.objects.get_silver()
 
-            elif command_name == "contribution":
-                message = gameMember.get_silver()
+                elif command_name == "contribution":
+                    message = gameMember.get_silver()
 
-            elif command_name == "jeton":
-                message = gameMember.get_token()
+                elif command_name == "jeton":
+                    message = gameMember.get_token()
 
-            elif command_name == "justice" and gameMember.classe.name == "oxem":
-                experience = gameMember.classe.xp_comp
-                silver = randint(gameMember.classe.min_silver_comp, gameMember.classe.max_silver_comp)
+                elif command_name in SKILL_LIST:
+                    force = False
+                    success = True
+                    experience = gameMember.classe.xp_comp
+                    silver = randint(gameMember.classe.min_silver_comp, gameMember.classe.max_silver_comp)
 
-                member_list = send_message.channel.members
+                    if command_name == "justice" and gameMember.classe.name == "oxem":
 
-                bonus = int(len(list(filter(lambda connected: connected.status == discord.Status.online,
-                                            member_list))) * OXEM['bonus'])
+                        member_list = send_message.channel.members
 
-                can_use = CommandHistory.objects.check_cooldown(command_name, send_message, gameMember.classe.cd_comp)
+                        bonus = int(len(list(filter(lambda connected: connected.status == discord.Status.online,
+                                                    member_list))) * OXEM['bonus'])
+                        experience += bonus
+                        message = OXEM['comp_success'].format(gameMember.member.name, experience, silver)
 
-                if can_use is True:
-                    experience += bonus
+                    elif command_name == "pillage" and gameMember.classe.name == "talkoran":
+                        success = False if TALKORAN['fail_rate'] >= random() else True
 
-                    experience = gameMember.add_experience(experience)
-                    gameMember.add_silver(silver)
+                        if success:
+                            bonus = randint(TALKORAN['min_bonus'], TALKORAN['max_bonus'])
 
-                    message = OXEM['comp_success'].format(gameMember.member.name, experience, silver)
-                else:
-                    message = ERRORS['on_cd'].format(int(gameMember.classe.cd_comp - can_use))
+                        else:
+                            bonus = -1
+                            message = TALKORAN['comp_failed'].format(gameMember.member.name, experience, silver)
 
-            elif command_name == "pillage" and gameMember.classe.name == "talkoran":
-                experience = gameMember.classe.xp_comp
-                silver = randint(gameMember.classe.min_silver_comp, gameMember.classe.max_silver_comp)
+                    elif command_name == "aquillon" and gameMember.classe.name == "shosizuke":
+                        is_crit = ''
 
-                success = False if TALKORAN['fail_rate'] >= random() else True
+                        if SHOSIZUKE['crit'] >= random():
+                            is_crit = ' ▶️ CRITIQUE '
+                            silver *= 2
+                            force = True
 
-                if success:
-                    bonus = randint(TALKORAN['min_bonus'], TALKORAN['max_bonus'])
+                        message = SHOSIZUKE['comp_success'].format(gameMember.member.name, is_crit, experience, silver)
 
-                else:
-                    bonus = -1
-
-                can_use = CommandHistory.objects.check_cooldown(command_name, send_message, gameMember.classe.cd_comp)
-
-                if can_use is True:
-                    silver += CommandHistory.objects.update_bonus(command_name, send_message, bonus)
-
-                    gameMember.add_experience(experience)
-                    gameMember.add_silver(silver)
-
-                    if success:
-                        message = TALKORAN['comp_success'].format(gameMember.member.name, experience, silver)
                     else:
-                        message = TALKORAN['comp_failed'].format(gameMember.member.name, experience, silver)
-                else:
-                    message = ON_CD.format(int(gameMember.classe.cd_comp - can_use))
+                        message = ERRORS['non_authorized']
+                        return message, files
 
-            elif command_name == "aquillon" and gameMember.classe.name == "shosizuke":
-                is_crit = ''
-                force = False
-                experience = gameMember.classe.xp_comp
-                silver = randint(gameMember.classe.min_silver_comp, gameMember.classe.max_silver_comp)
+                    can_use = CommandHistory.objects.check_cooldown(command_name, send_message,
+                                                                    gameMember.classe.cd_comp, True)
 
-                if SHOSIZUKE['crit'] >= random():
-                    is_crit = ' ▶️ CRITIQUE '
-                    silver *= 2
-                    force = True
+                    if can_use is True:
+                        experience = gameMember.add_experience(experience)
 
-                can_use = CommandHistory.objects.check_cooldown(command_name, send_message,
-                                                                gameMember.classe.cd_comp, force)
+                        if command_name == "pillage" and success:
+                            silver += CommandHistory.objects.update_bonus(command_name, send_message, bonus)
+                            message = TALKORAN['comp_success'].format(gameMember.member.name, experience, silver)
 
-                if can_use is True:
-                    gameMember.add_experience(experience)
-                    gameMember.add_silver(silver)
+                        gameMember.add_silver(silver)
 
-                    message = SHOSIZUKE['comp_success'].format(gameMember.member.name, is_crit, experience, silver)
-                else:
-                    message = ON_CD.format(int(gameMember.classe.cd_comp - can_use))
+                    else:
+                        message = ERRORS['on_cd'].format(int(gameMember.classe.cd_comp - can_use))
 
-            elif send_message.author.guild_permissions.administrator:
+            elif send_message.author.guild_permissions.administrator and command_name in ADMIN_COMMAND_LIST:
                 if command_name == "bonusxp":
                     if parameters:
                         message = Game.objects.alter_xp(parameters[0])

@@ -1,7 +1,3 @@
-CHOISIR_DONE = "Vous jouez désormais le héros {} !"
-
-XP = "【 {} 】 Niveau {} » {} XP"
-
 XP_REQUIRE = {
     100: 1,
     230: 2,
@@ -213,9 +209,3 @@ ERRORS = {
     'on_cd': "Vous pourrez utiliser la commande dans {}mn",
     'player_dne': "Ce joueur n'existe pas",
 }
-
-SILVER_GLOBAL = "Nous disposons actuellement de {} Silver"
-
-SILVER_USER = "{} a récolté {} Silver pour la communauté !"
-
-TOKEN_USER = "Tu possèdes {} jetons."
