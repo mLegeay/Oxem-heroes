@@ -125,7 +125,6 @@ LEVEL_LIST = {
 
 COMMAND_LIST = [
     "choisir",
-    "competence",
     "contribution",
     "jeton",
     "silver",
@@ -140,12 +139,11 @@ COMMAND_LIST = [
 ]
 
 PLAYER_COMMAND = [
-    "xp",
     "choisir",
-    "competence",
-    "silver",
     "contribution",
     "jeton",
+    "silver",
+    "xp",
 ]
 
 SKILL_LIST = [
@@ -208,4 +206,12 @@ ERRORS = {
     'not_a_player': "Commencez par choisir un héros. (!choisir)",
     'on_cd': "Vous pourrez utiliser la commande dans {}mn",
     'player_dne': "Ce joueur n'existe pas",
+}
+
+HELP_COMMAND = ['help', 'aide']
+
+HELP_MESSAGE = {
+    'start': "Liste des commandes :\n```Commandes générales :\n",
+    'classe': "\nCommandes de classe :\n",
+    'end': "```\n Utiliser !help <command> ou !aide <command> pour avoir plus de détails.",
 }

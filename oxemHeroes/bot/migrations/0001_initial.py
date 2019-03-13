@@ -32,9 +32,6 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(max_length=100, unique=True)),
                 ('description', models.CharField(max_length=255)),
                 ('how_to', models.CharField(max_length=100)),
-                ('usable_by', django.contrib.postgres.fields.jsonb.JSONField(null=True)),
-                ('active', models.BooleanField(default=True)),
-                ('admin_command', models.BooleanField(default=False)),
             ],
         ),
         migrations.CreateModel(
@@ -82,7 +79,6 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(max_length=100)),
                 ('joined_at', models.DateTimeField()),
                 ('discriminator', models.CharField(max_length=10)),
-                ('bot', models.BooleanField(default=False)),
             ],
         ),
         migrations.AddField(

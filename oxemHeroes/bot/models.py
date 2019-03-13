@@ -3,7 +3,6 @@ from datetime import datetime
 from random import *
 
 from django.conf import settings
-from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.utils import timezone
 
@@ -14,6 +13,8 @@ from .constants import (ADMIN_COMMAND_LIST,
                         COMMAND_LIST,
                         DONE,
                         ERRORS,
+                        HELP_COMMAND,
+                        HELP_MESSAGE,
                         HERO_LIST,
                         LEVEL_LIST,
                         OXEM,
@@ -72,7 +73,6 @@ class Member(models.Model):
     joined_at = models.DateTimeField()
 
     discriminator = models.CharField(max_length=10)
-    bot = models.BooleanField(default=False)
 
     objects = MemberQuerySet.as_manager()
 
@@ -248,12 +248,12 @@ class CommandHistoryQuerySet(models.QuerySet):
     def check_cooldown(self, command_name, message, cooldown, force=False):
 
         commandHistory, created = self._get_commandHistory(command_name, message)
-        now = datetime.now()
+        now = timezone.now()
 
         can_use = True
 
         if not created:
-            used_since = (now - commandHistory.last_used.replace(tzinfo=None)).total_seconds()//60 - cooldown
+            used_since = (now - commandHistory.last_used).total_seconds()//60
             if used_since >= cooldown or force:
                 commandHistory.last_used = now
                 commandHistory.save(update_fields=['last_used'])
@@ -277,6 +277,9 @@ class CommandHistoryQuerySet(models.QuerySet):
         commandHistory.save(update_fields=['bonus'])
 
         return commandHistory.bonus
+
+    def get_bonus(self, command_name, message):
+        return self._get_commandHistory(command_name, message)[0].bonus
 
 
 class CommandHistory(models.Model):
@@ -382,10 +385,15 @@ class CommandQuerySet(models.QuerySet):
                     elif command_name == "aquillon" and gameMember.classe.name == "shosizuke":
                         is_crit = ''
 
+                        if CommandHistory.objects.get_bonus(command_name, send_message) != 0:
+                            force = True
+
                         if SHOSIZUKE['crit'] >= random():
+                            bonus = 1
                             is_crit = ' ▶️ CRITIQUE '
                             silver *= 2
-                            force = True
+                        else:
+                            bonus = -1
 
                         message = SHOSIZUKE['comp_success'].format(gameMember.member.name, is_crit, experience, silver)
 
@@ -394,7 +402,7 @@ class CommandQuerySet(models.QuerySet):
                         return message, files
 
                     can_use = CommandHistory.objects.check_cooldown(command_name, send_message,
-                                                                    gameMember.classe.cd_comp, True)
+                                                                    gameMember.classe.cd_comp, force)
 
                     if can_use is True:
                         experience = gameMember.add_experience(experience)
@@ -402,6 +410,9 @@ class CommandQuerySet(models.QuerySet):
                         if command_name == "pillage" and success:
                             silver += CommandHistory.objects.update_bonus(command_name, send_message, bonus)
                             message = TALKORAN['comp_success'].format(gameMember.member.name, experience, silver)
+
+                        if command_name == "aquillon":
+                            CommandHistory.objects.update_bonus(command_name, send_message, bonus)
 
                         gameMember.add_silver(silver)
 
@@ -440,8 +451,32 @@ class CommandQuerySet(models.QuerySet):
             else:
                 message = ERRORS['non_authorized']
 
+        elif command_name in HELP_COMMAND:
+
+            if parameters:
+                command = self._get_command(parameters[0])
+
+                if command is not None:
+                    message = "`{}`".format(command.how_to)
+                else:
+                    message = ERRORS['command_dne']
+            else:
+                message = HELP_MESSAGE['start']
+
+                for each in PLAYER_COMMAND:
+                    command = self._get_command(each)
+                    message += "- {}: {}\n".format(command.name, command.description)
+
+                message += HELP_MESSAGE['classe']
+
+                for each in SKILL_LIST:
+                    command = self._get_command(each)
+                    message += "- {}: {}\n".format(command.name, command.description)
+
+                message += HELP_MESSAGE['end']
+
         else:
-            return ERRORS['command_dne'], files
+            message = ERRORS['command_dne']
 
         return message, files
 
@@ -453,13 +488,9 @@ class Command(models.Model):
     description = models.CharField(max_length=255)
     how_to = models.CharField(max_length=100)
 
-    usable_by = JSONField(null=True)
-    active = models.BooleanField(default=True)
-    admin_command = models.BooleanField(default=False)
-
     objects = CommandQuerySet.as_manager()
 
     def __str__(self):
         """Override de la méthode __str__."""
 
-        return '{0} - active : {1} - admin? : {2}'.format(self.name, self.active, self.admin_command)
+        return '{0} - active : {1} - admin? : {2}'.format(self.name)
