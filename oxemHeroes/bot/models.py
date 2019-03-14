@@ -3,6 +3,7 @@ from datetime import datetime
 from random import *
 
 from django.conf import settings
+from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.utils import timezone
 
@@ -303,6 +304,46 @@ class CommandHistory(models.Model):
         return 'member : {0} - command : {1} - last_used : {2}'.format(self.member.name, self.command, self.last_used)
 
 
+class GiveawayQuerySet(models.QuerySet):
+    """Requête de base pour les informations de giveaway."""
+
+    def _get_giveaway(self):
+        return self.all().first()
+
+    def _get_participants(self):
+        return self._get_giveaway().participants['participants']
+
+    def participer(self, send_message):
+        message = "Vous êtes bien inscrit pour le prochain GiveAway"
+
+        member, created = Member.objects.from_message(send_message)
+
+        giveaway = self._get_giveaway()
+        participants = self._get_participants()
+
+        if member.__str__() not in participants:
+            giveaway.participants['participants'].append(member.__str__())
+            giveaway.save()
+
+        else:
+            message = "Vous participez déjà au Giveaway"
+
+        return message
+
+
+class Giveaway(models.Model):
+    """Modèle des Giveaway."""
+
+    participants = JSONField()
+
+    objects = GiveawayQuerySet.as_manager()
+
+    def __str__(self):
+        """Override de la méthode __str__."""
+
+        return 'participants : {0}'.format(self.participants)
+
+
 class CommandQuerySet(models.QuerySet):
     """Requête de base pour les commandes."""
 
@@ -447,6 +488,14 @@ class CommandQuerySet(models.QuerySet):
                             message = ERRORS['player_dne']
                     else:
                         message = command.how_to
+
+                elif command_name == "giveaway":
+                    Giveaway.objects.all().delete()
+                    Giveaway.objects.create(participants={'participants': []})
+                    message = "Giveaway créé avec succès"
+
+            elif command_name == "participer":
+                message = Giveaway.objects.participer(send_message)
 
             else:
                 message = ERRORS['non_authorized']

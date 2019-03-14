@@ -81,6 +81,15 @@ class Migration(migrations.Migration):
                 ('discriminator', models.CharField(max_length=10)),
             ],
         ),
+
+        migrations.CreateModel(
+            name='Giveaway',
+            fields=[
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('participants', django.contrib.postgres.fields.jsonb.JSONField()),
+            ],
+        ),
+
         migrations.AddField(
             model_name='gamemember',
             name='member',

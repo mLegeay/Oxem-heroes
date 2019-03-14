@@ -136,6 +136,8 @@ COMMAND_LIST = [
     "aquillon",
     "justice",
     "pillage",
+    "giveaway",
+    "participer",
 ]
 
 PLAYER_COMMAND = [
@@ -156,6 +158,7 @@ ADMIN_COMMAND_LIST = [
     "addjeton",
     "addsilver",
     "bonusxp",
+    "giveaway",
 ]
 
 HERO_LIST = [

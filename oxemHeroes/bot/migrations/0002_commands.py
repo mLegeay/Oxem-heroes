@@ -55,6 +55,14 @@ def add_commands(apps, schema_editor):
                            description="Permet d'utiliser Pillage de Shosizuke.",
                            how_to="!pillage")
 
+    Command.objects.create(name="giveaway",
+                           description="Démarre un giveaway.",
+                           how_to="!giveaway")
+
+    Command.objects.create(name="participer",
+                           description="Participer à un giveaway.",
+                           how_to="!participer")
+
 
 class Migration(migrations.Migration):
 
