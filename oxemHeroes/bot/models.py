@@ -280,6 +280,11 @@ class CommandHistoryQuerySet(models.QuerySet):
         return commandHistory.bonus
 
     def get_bonus(self, command_name, message):
+        commandHistory, created = self._get_commandHistory(command_name, message)
+        if created:
+            commandHistory.delete()
+            return 0
+
         return self._get_commandHistory(command_name, message)[0].bonus
 
 
