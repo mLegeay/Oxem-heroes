@@ -17,7 +17,7 @@ def add_commands(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bot', '0003_classes')
+        ('game', '0001_initial')
     ]
 
     operations = [

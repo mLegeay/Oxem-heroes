@@ -23,7 +23,7 @@ from .constants import (ADMIN_COMMAND_LIST,
                         SHOSIZUKE,
                         SKILL_LIST,
                         TALKORAN,
-                        XP_REQUIRE)
+                        )
 
 
 class EventsLog(models.Model):

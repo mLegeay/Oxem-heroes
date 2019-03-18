@@ -24,6 +24,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'oxemHeroes.bot',
+    'oxemHeroes.classe',
+    'oxemHeroes.game',
+    'oxemHeroes.gameMember',
+    'oxemHeroes.giveAway',
+    'oxemHeroes.member',
 ]
 
 MIDDLEWARE = [

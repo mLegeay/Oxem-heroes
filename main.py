@@ -25,7 +25,7 @@ async def on_message(message):
     if(message.author.bot):
         return
 
-    if not message.content.startswith('!'):
+    if not message.content.startswith('%'):
         return
 
     command = message.content[1:].split(' ')[0]
