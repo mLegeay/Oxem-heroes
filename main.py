@@ -60,36 +60,8 @@ def execute(send_message, command_name, parameters):
                 message = c_classe(command_name, gameMember, send_message)
 
         elif send_message.author.guild_permissions.administrator and command_name in ADMIN_COMMAND_LIST:
-            if command_name == "bonusxp":
-                if parameters:
-                    message = Game.objects.alter_xp(parameters[0])
-                else:
-                    message = command.how_to
 
-            elif command_name == "addsilver":
-                if len(parameters) == 2 and send_message.mentions:
-                    gameMember = GameMember.objects.from_discord(
-                        send_message.mentions[0])
-
-                    if gameMember is not None:
-                        message = gameMember.add_silver(int(parameters[0]))
-                    else:
-                        message = ERRORS['player_dne']
-                else:
-                    message = command.how_to
-
-            elif command_name == "addjeton":
-                if len(parameters) == 2 and send_message.mentions:
-                    gameMember = GameMember.objects.from_discord(send_message.mentions[0])
-
-                    if gameMember is not None:
-                        message = gameMember.add_token(int(parameters[0]))
-                    else:
-                        message = ERRORS['player_dne']
-                else:
-                    message = command.how_to
-
-            elif command_name == "giveaway":
+            if command_name == "giveaway":
                 Giveaway.objects.all().delete()
                 Giveaway.objects.create(participants={'participants': []})
                 message = "Giveaway créé avec succès"
