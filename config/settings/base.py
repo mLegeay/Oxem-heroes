@@ -24,6 +24,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'oxemHeroes.bot',
+    'oxemHeroes.command',
+    'oxemHeroes.commandHistory',
     'oxemHeroes.classe',
     'oxemHeroes.game',
     'oxemHeroes.gameMember',
