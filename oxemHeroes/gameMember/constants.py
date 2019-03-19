@@ -122,3 +122,30 @@ LEVEL_LIST = {
     59: "Hardcore Gamer",
     60: "Grand Amiral de la Regalia",
 }
+
+HERO_LIST = [
+    "oxem",
+    "shosizuke",
+    "talkoran",
+]
+
+DONE = {
+    'choisir': "Vous jouez désormais le héros {} !",
+    'silver_global': "Nous disposons actuellement de {} Silver",
+    'silver_user': "{} a récolté {} Silver pour la communauté !",
+    'token_user': "Tu possèdes {} jetons.",
+    'xp': "【 {} 】 Niveau {} » {} XP",
+}
+
+ERRORS = {
+    'deja_choisis': "Vous avez déjà choisi un héros.",
+    'hero_dne': "Ce héros n'existe pas.",
+}
+
+HELP_COMMAND = ['help', 'aide']
+
+HELP_MESSAGE = {
+    'start': "Liste des commandes :\n```Commandes générales :\n",
+    'classe': "\nCommandes de classe :\n",
+    'end': "```\n Utiliser !help <command> ou !aide <command> pour avoir plus de détails.",
+}

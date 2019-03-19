@@ -7,7 +7,9 @@ from discord.ext.commands import Bot
 from discord.ext import commands
 from django.conf import settings
 
-from oxemHeroes.bot.models import Member, Game, Command
+from oxemHeroes.command.models import Command
+from oxemHeroes.classe.commands import Commands as c_classe
+from oxemHeroes.gameMember.commands import Commands as c_gameMember
 
 client = commands.Bot(command_prefix="!")
 
@@ -35,8 +37,97 @@ async def on_message(message):
     command = None if len(command) == 0 else command
 
     if command is not None:
-        content, files = Command.objects.execute(message, command, parameters)
+        content, files = execute(message, command, parameters)
         await message.channel.send(content=content, files=files)
+
+
+def execute(send_message, command_name, parameters):
+
+    files = None
+
+    if command_name in COMMAND_LIST:
+        command = Command.objects._get_command(command_name)
+        gameMember = GameMember.objects.from_message(send_message)
+
+        if command_name in PLAYER_COMMAND or command_name in SKILL_LIST:
+            if gameMember is None and command.name == "choisir" or gameMember is not None:
+                files, message = c_gameMember(command, gameMember, send_message, parameters)
+
+            elif gameMember is None:
+                message = ERRORS['not_a_player']
+
+            elif command_name in SKILL_LIST:
+                message = c_classe(command_name, gameMember, send_message)
+
+        elif send_message.author.guild_permissions.administrator and command_name in ADMIN_COMMAND_LIST:
+            if command_name == "bonusxp":
+                if parameters:
+                    message = Game.objects.alter_xp(parameters[0])
+                else:
+                    message = command.how_to
+
+            elif command_name == "addsilver":
+                if len(parameters) == 2 and send_message.mentions:
+                    gameMember = GameMember.objects.from_discord(
+                        send_message.mentions[0])
+
+                    if gameMember is not None:
+                        message = gameMember.add_silver(int(parameters[0]))
+                    else:
+                        message = ERRORS['player_dne']
+                else:
+                    message = command.how_to
+
+            elif command_name == "addjeton":
+                if len(parameters) == 2 and send_message.mentions:
+                    gameMember = GameMember.objects.from_discord(send_message.mentions[0])
+
+                    if gameMember is not None:
+                        message = gameMember.add_token(int(parameters[0]))
+                    else:
+                        message = ERRORS['player_dne']
+                else:
+                    message = command.how_to
+
+            elif command_name == "giveaway":
+                Giveaway.objects.all().delete()
+                Giveaway.objects.create(participants={'participants': []})
+                message = "Giveaway créé avec succès"
+
+        elif command_name == "participer":
+            message = Giveaway.objects.participer(send_message)
+
+        else:
+            message = ERRORS['non_authorized']
+
+    elif command_name in HELP_COMMAND:
+
+        if parameters:
+            command = Command.objects._get_command(parameters[0])
+
+            if command is not None:
+                message = "`{}`".format(command.how_to)
+            else:
+                message = ERRORS['command_dne']
+        else:
+            message = HELP_MESSAGE['start']
+
+            for each in PLAYER_COMMAND:
+                command = Command.objects._get_command(each)
+                message += "- {}: {}\n".format(command.name, command.description)
+
+            message += HELP_MESSAGE['classe']
+
+            for each in SKILL_LIST:
+                command = Command.objects._get_command(each)
+                message += "- {}: {}\n".format(command.name, command.description)
+
+            message += HELP_MESSAGE['end']
+
+    else:
+        message = ERRORS['command_dne']
+
+    return message, files
 
 
 client.run(settings.TOKEN)

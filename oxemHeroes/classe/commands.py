@@ -30,7 +30,7 @@ class Commands(object):
            - GameMember gameMember : le membre ayant effectué la commande de compétence
 
            parameters:
-           - String command_name : nom de la commande utilisé
+           - String command_name : nom de la commande utilisée
            - String _message : message contenant la commande
            - GameMember gameMember : le membre ayant effectué la commande de compétence
 

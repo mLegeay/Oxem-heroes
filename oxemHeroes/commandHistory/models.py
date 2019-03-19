@@ -2,11 +2,7 @@ from django.db import models
 from django.utils import timezone
 import sys
 from oxemHeroes.member.models import Member
-
-if "oxemHeroes.command" in sys.modules:
-    print(sys.modules['oxemHeroes.command'])
-    print(sys.modules['oxemHeroes.command'].models)
-    # from oxemHeroes.command.models import Command
+from oxemHeroes.command.models import Command
 
 
 class CommandHistoryQuerySet(models.QuerySet):
