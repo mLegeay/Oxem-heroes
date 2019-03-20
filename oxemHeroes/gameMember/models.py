@@ -80,23 +80,31 @@ class GameMember(models.Model):
         return '{0} - xp : {1} - silver : {2}'.format(self.member.name, self.experience, self.silver)
 
     def _get_level(self, xp):
+        """Renvoi le level du joueur."""
+
         for key, value in enumerate(XP_REQUIRE):
             if xp < value:
                 return key
         return XP_REQUIRE.keys()[-1]
 
     def add_silver(self, silver):
+        """Ajoute des silvers au joueur."""
+
         self.silver += silver
         self.save(update_fields=['silver'])
         Game.objects.add_silver(silver)
         return ADMIN_DONE['add_silver'].format(silver, self.member.name)
 
     def add_token(self, token):
+        """Ajoute des jetons au joueur."""
+
         self.token += token
         self.save(update_fields=['token'])
         return ADMIN_DONE['add_token'].format(token, self.member.name)
 
     def add_experience(self, experience):
+        """Ajoute de l'expérience au joueur."""
+
         experience = experience * (1 + Game.objects.get_bonusxp() / 100)
         self.experience += experience
         self.save(update_fields=['experience'])
@@ -104,11 +112,17 @@ class GameMember(models.Model):
         return int(experience)
 
     def get_experience(self):
+        """Renvoi un message contenant le titre, level et niveau du joueur."""
+
         level = self._get_level(self.experience) + 1
         return DONE['xp'].format(LEVEL_LIST[level], level, self.experience)
 
     def get_silver(self):
+        """Renvoi un message contenant les silvers du joueur."""
+
         return DONE['silver_user'].format(self.member.name, self.silver)
 
     def get_token(self):
+        """Renvoi un message contenant les jetons du joueur."""
+
         return DONE['token_user'].format(self.token)

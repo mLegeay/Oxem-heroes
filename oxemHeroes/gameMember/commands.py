@@ -19,9 +19,7 @@ class Commands(object):
         """Initialise les valeurs de la classe."""
 
     def process(self, command, gameMember, _message, parameters):
-        """Initialise les valeurs de la classe.
-
-           variables :
+        """variables :
            - DiscordFile files : fichier à envoyer avec le message
            - String message  : Message renvoyé en réponse à l'utilisateur
 
@@ -81,17 +79,17 @@ class Commands(object):
         return files, message
 
     def get_experience(self, gameMember):
-        """."""
+        """Retourne un message contenant l'experience, le level et le titre du joueur."""
         return gameMember.get_experience()
 
     def get_silver(self, gameMember):
-        """."""
+        """Retourne un message contenant les silvers du joueur."""
         return gameMember.get_silver()
 
     def get_silver_max(self, gameMember):
-        """."""
+        """Retourne un message contenant les silvers accumulés joueur."""
         return gameMember.get_silver()
 
     def get_token(self, gameMember):
-        """."""
+        """Retourne un message contenant les jetons du joueur."""
         return gameMember.get_token()

@@ -1,3 +1,4 @@
+# Xp requis pour passer au niveau suivant
 XP_REQUIRE = {
     100: 1,
     230: 2,
@@ -60,6 +61,7 @@ XP_REQUIRE = {
     500000: 59
 }
 
+# Titre correspondant au niveau
 LEVEL_LIST = {
     1: "Nouveau",
     2: "Débutant",
@@ -123,12 +125,18 @@ LEVEL_LIST = {
     60: "Grand Amiral de la Regalia",
 }
 
+# Liste des héros jouables
 HERO_LIST = [
     "oxem",
     "shosizuke",
     "talkoran",
 ]
 
+# choisir : message de choix de héros
+# silver_global : message affichant les silvers du serveur
+# silver_user : message affichant les silvers du joueur
+# token_user : message affichant les jetons du joueur
+# xp : message affichant l'xp du joueur
 DONE = {
     'choisir': "Vous jouez désormais le héros {} !",
     'silver_global': "Nous disposons actuellement de {} Silver",
@@ -137,15 +145,9 @@ DONE = {
     'xp': "【 {} 】 Niveau {} » {} XP",
 }
 
+# deja_choisis : l'utilisateur a déjà choisi un héros
+# hero_dne : l'utilisateur a indiqué un héros qui n'existe pas
 ERRORS = {
     'deja_choisis': "Vous avez déjà choisi un héros.",
     'hero_dne': "Ce héros n'existe pas.",
-}
-
-HELP_COMMAND = ['help', 'aide']
-
-HELP_MESSAGE = {
-    'start': "Liste des commandes :\n```Commandes générales :\n",
-    'classe': "\nCommandes de classe :\n",
-    'end': "```\n Utiliser !help <command> ou !aide <command> pour avoir plus de détails.",
 }
