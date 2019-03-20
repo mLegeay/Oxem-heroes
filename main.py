@@ -1,18 +1,21 @@
 # Create your views here.
 
-import discord
 import asyncio
 
-from discord.ext.commands import Bot
-from discord.ext import commands
 from django.conf import settings
 
-from oxemHeroes.command.models import Command
-from oxemHeroes.gameMember.models import GameMember
-from oxemHeroes.classe.commands import Commands as c_classe
-from oxemHeroes.gameMember.commands import Commands as c_gameMember
+import discord
 
-from oxemHeroes.bot.constants import COMMAND_LIST, PLAYER_COMMAND, SKILL_LIST
+from discord.ext import commands
+from discord.ext.commands import Bot
+
+from oxemHeroes.bot.constants import (ADMIN_COMMAND_LIST, COMMAND_LIST,
+                                      PLAYER_COMMAND, SKILL_LIST)
+from oxemHeroes.classe.commands import Commands as c_classe
+from oxemHeroes.command.commands import Commands as c_command
+from oxemHeroes.command.models import Command
+from oxemHeroes.gameMember.commands import Commands as c_gameMember
+from oxemHeroes.gameMember.models import GameMember
 
 client = commands.Bot(command_prefix="!")
 
@@ -65,11 +68,8 @@ def execute(send_message, command_name, parameters):
                 message = instance_classe.process(command_name, send_message)
 
         elif send_message.author.guild_permissions.administrator and command_name in ADMIN_COMMAND_LIST:
-
-            if command_name == "giveaway":
-                Giveaway.objects.all().delete()
-                Giveaway.objects.create(participants={'participants': []})
-                message = "Giveaway créé avec succès"
+            instance_command = c_command()
+            message = instance_command.process(command, gameMember, send_message, parameters)
 
         elif command_name == "participer":
             message = Giveaway.objects.participer(send_message)
