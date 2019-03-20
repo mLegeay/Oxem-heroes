@@ -14,6 +14,10 @@ class CommandQuerySet(models.QuerySet):
 
         return command
 
+    def from_name(self, command_name):
+
+        return self._get_command(command_name)
+
 
 class Command(models.Model):
     """Modèle des commandes."""
@@ -27,4 +31,4 @@ class Command(models.Model):
     def __str__(self):
         """Override de la méthode __str__."""
 
-        return '{0} - active : {1} - admin? : {2}'.format(self.name)
+        return '{0}'.format(self.name)

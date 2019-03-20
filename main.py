@@ -8,8 +8,11 @@ from discord.ext import commands
 from django.conf import settings
 
 from oxemHeroes.command.models import Command
+from oxemHeroes.gameMember.models import GameMember
 from oxemHeroes.classe.commands import Commands as c_classe
 from oxemHeroes.gameMember.commands import Commands as c_gameMember
+
+from oxemHeroes.bot.constants import COMMAND_LIST, PLAYER_COMMAND, SKILL_LIST
 
 client = commands.Bot(command_prefix="!")
 
@@ -46,18 +49,20 @@ def execute(send_message, command_name, parameters):
     files = None
 
     if command_name in COMMAND_LIST:
-        command = Command.objects._get_command(command_name)
+        command = Command.objects.from_name(command_name)
         gameMember = GameMember.objects.from_message(send_message)
 
         if command_name in PLAYER_COMMAND or command_name in SKILL_LIST:
-            if gameMember is None and command.name == "choisir" or gameMember is not None:
-                files, message = c_gameMember(command, gameMember, send_message, parameters)
+            if command.name == "choisir":
+                instance_gameMember = c_gameMember()
+                files, message = instance_gameMember.process(command, gameMember, send_message, parameters)
 
             elif gameMember is None:
                 message = ERRORS['not_a_player']
 
             elif command_name in SKILL_LIST:
-                message = c_classe(command_name, gameMember, send_message)
+                instance_classe = c_classe(gameMember)
+                message = instance_classe.process(command_name, send_message)
 
         elif send_message.author.guild_permissions.administrator and command_name in ADMIN_COMMAND_LIST:
 

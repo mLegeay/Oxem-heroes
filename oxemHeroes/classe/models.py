@@ -9,7 +9,14 @@ class ClasseQuerySet(models.QuerySet):
 
 
 class Classe(models.Model):
-    """Modèle des classes d'OxemHeroes."""
+    """Modèle des classes d'OxemHeroes.
+    
+       - name = nom de la classe
+       - xp_comp = xp rapporté par la compétence
+       - min_silver_comp = silver minimum remporté avec la compétence
+       - max_silver_comp = silver maximum remporté avec la compétence
+       - cd_comp = cooldown de la compétence
+    """
 
     name = models.CharField(max_length=50, unique=True)
 

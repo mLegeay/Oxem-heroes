@@ -1,7 +1,13 @@
-"""Commande pour les classes.
+"""Commande pour les gameMember.
 
--
+- choisir : Permet de choisir un héros parmis la liste des héros
+- xp : Renvoi un message contenant le niveau, le titre et l'xp obtenu jusque la
 """
+import os
+
+from django.conf import settings
+from oxemHeroes.gameMember.constants import HERO_LIST, ERRORS
+from oxemHeroes.gameMember.models import GameMember
 
 import discord
 
@@ -9,14 +15,25 @@ import discord
 class Commands(object):
     """Traite les commandes reçus pour les classes."""
 
-    def __init__(self, command, gameMember, _message, parameters):
+    def __init__(self):
+        """Initialise les valeurs de la classe."""
+
+    def process(self, command, gameMember, _message, parameters):
         """Initialise les valeurs de la classe.
 
            variables :
+           - DiscordFile files : fichier à envoyer avec le message
+           - String message  : Message renvoyé en réponse à l'utilisateur
 
            parameters:
+           - Command command : commande utilisée par l'utilisateur
+           - GameMember gameMember : Utilisateur ayant lancée la commande
+           - String _message  : Message envoyé par l'utilisateur
+           - Tuple parameters : Liste des mots utilisés après la commande
 
            return:
+           - DiscordFile files : fichier à envoyer avec le message
+           - String message  : Message renvoyé en réponse à l'utilisateur
         """
 
         files = None
@@ -25,16 +42,16 @@ class Commands(object):
             files, message = self.choisir(command, gameMember, _message, parameters)
 
         elif command.name == "xp":
-            message = self.get_experience()
+            message = self.get_experience(gameMember)
 
         elif command.name == "silver":
-            message = self.get_silver()
+            message = self.get_silver(gameMember)
 
         elif command.name == "contribution":
-            message = self.get_silver()
+            message = self.get_silver(gameMember)
 
         elif command.name == "jeton":
-            message = self.get_token()
+            message = self.get_token(gameMember)
 
         return files, message
 
@@ -46,32 +63,35 @@ class Commands(object):
         if gameMember is None and parameters:
             if parameters[0].lower() in HERO_LIST:
                 message = GameMember.objects.create_character(_message, parameters[0].lower())
+
             else:
                 message = ERRORS['hero_dne']
-            elif gameMember is not None and parameters:
-                message = ERRORS['deja_choisis']
-            else:
-                message = command.how_to
-                files = []
-                path = "{}/oxemHeroes/bot/static/image".format(settings.DJANGO_ROOT)
-                for file in os.listdir(path):
-                    if os.path.isfile(os.path.join(path, file)):
-                        files.append(discord.File(os.path.join(path, file)))
+
+        elif gameMember is not None and parameters:
+            message = ERRORS['deja_choisis']
+
+        else:
+            message = command.how_to
+            files = []
+            path = "{}/oxemHeroes/bot/static/image".format(settings.DJANGO_ROOT)
+            for file in os.listdir(path):
+                if os.path.isfile(os.path.join(path, file)):
+                    files.append(discord.File(os.path.join(path, file)))
 
         return files, message
 
-    def get_experience(gameMember):
+    def get_experience(self, gameMember):
         """."""
         return gameMember.get_experience()
 
-    def get_silver(gameMember):
+    def get_silver(self, gameMember):
         """."""
         return gameMember.get_silver()
 
-    def get_silver_max(gameMember):
+    def get_silver_max(self, gameMember):
         """."""
         return gameMember.get_silver()
 
-    def get_token(gameMember):
+    def get_token(self, gameMember):
         """."""
         return gameMember.get_token()

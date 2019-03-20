@@ -10,6 +10,7 @@
 """
 
 import discord
+from random import *
 from oxemHeroes.classe.constants import ERRORS, OXEM, SHOSIZUKE, TALKORAN
 from oxemHeroes.commandHistory.models import CommandHistory
 
@@ -17,34 +18,43 @@ from oxemHeroes.commandHistory.models import CommandHistory
 class Commands(object):
     """Traite les commandes reçus pour les classes."""
 
-    def __init__(self, command_name, gameMember, _message):
+    def __init__(self, gameMember):
         """Initialise les valeurs de la classe.
 
            variables :
-           - Integer bonus : le bonus correspond à un critique pour Aquillon et à un bonus en silver pour Pillage
            - Integer experience : l'expérience acquis
            - Integer silver : la quantité de silver récolté grâce à la compétence
-           - String message : message a renvoyé à l'utilisateur (ne pas confondre self.message et _message)
-           - Boolean force : permet de forcer l'utilisation de la commande sans CD
-           - Boolean success : compétence de talkoran, permet de vérifier si son bonus retourne à 0 ou augmente
            - GameMember gameMember : le membre ayant effectué la commande de compétence
 
            parameters:
-           - String command_name : nom de la commande utilisée
-           - String _message : message contenant la commande
            - GameMember gameMember : le membre ayant effectué la commande de compétence
-
-           return:
-           - String message : message a renvoyé à l'utilisateur (ne pas confondre self.message et _message)
         """
-        force = False
-        success = True
-        bonus = None
 
         self.gameMember = gameMember
 
         self.experience = self.gameMember.classe.xp_comp
         self.silver = randint(self.gameMember.classe.min_silver_comp, self.gameMember.classe.max_silver_comp)
+
+    def process(self, command_name, _message):
+        """Initialise les valeurs de la classe.
+
+           variables :
+           - Integer bonus : le bonus correspond à un critique pour Aquillon et à un bonus en silver pour Pillage
+           - String message : message a renvoyé à l'utilisateur (ne pas confondre self.message et _message)
+           - Boolean force : permet de forcer l'utilisation de la commande sans CD
+           - Boolean success : compétence de talkoran, permet de vérifier si son bonus retourne à 0 ou augmente
+
+           parameters:
+           - String command_name : nom de la commande utilisée
+           - String _message : message contenant la commande
+
+           return:
+           - String message : message a renvoyé à l'utilisateur (ne pas confondre self.message et _message)
+        """
+
+        force = False
+        success = True
+        bonus = None
 
         if command_name == "aquillon" and self.gameMember.classe.name == "shosizuke":
             force, bonus = self.aquillon(force, _message, command_name)
@@ -64,7 +74,17 @@ class Commands(object):
         return self.message
 
     def aquillon(self, force, _message, command_name):
-        """."""
+        """Compétence de Shosizuke.
+
+           Shosizuke a 20% de chance d'effectuer un critique.
+           S'il effectue un critique, il peut réutiliser sa compétence sans cooldown.
+           De plus en cas de critique les silvers obtenus sont doublés
+
+           variables :
+           - String is_crit : si la compétence est un crit, la valeur devient ' ▶️ CRITIQUE '
+           ceci afin que le message de réussite informe l'utilisateur de ce critique.
+           - Integer Bonus : si le bonus est égale à 1 c'est un critique sinon c'est un coup simple.
+        """
         is_crit = ''
 
         if CommandHistory.objects.get_bonus(command_name, _message) != 0:
@@ -85,7 +105,13 @@ class Commands(object):
         return force, bonus
 
     def justice(self, _message):
-        """."""
+        """Compétence d'Oxem.
+
+           Oxem gagne un bonus à son xp représentant 5% des joueurs ayant le statut en ligne sur le serveur.
+
+           variable:
+           - Tuple member_list : liste des membres du serveur.
+        """
 
         member_list = _message.channel.members
 
@@ -95,7 +121,18 @@ class Commands(object):
         self.message = OXEM['comp_success'].format(self.gameMember.member.name, self.experience, self.silver)
 
     def pillage(self, success):
-        """."""
+        """Compétence de Talkoran.
+
+           Talkoran a 6% de chance d'échouer son pillage.
+           S'il réussit le pillage il cumule un bonus allant de 0 à 20 sur ses silvers.
+           Le bonus octroyé à chaque réussite va de 0 à 5.
+           S'il échoue, le bonus retourne à 0.
+
+           Bonus = -1 permet de réinitialiser la variable bonus
+
+           variable:
+           - Boolean success : Correspond à l'echec ou la réussite du pillage
+        """
 
         success = False if TALKORAN['fail_rate'] >= random() else True
 
@@ -109,7 +146,7 @@ class Commands(object):
         return bonus, success
 
     def can_use(self, bonus, _message, force, success, command_name):
-        """."""
+        """Vérifie si la commande de l'utilisateur peut être executé en fonction du cooldown."""
 
         can_use = CommandHistory.objects.check_cooldown(command_name,
                                                         _message,
