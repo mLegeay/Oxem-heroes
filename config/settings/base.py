@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'oxemHeroes.gameMember',
     'oxemHeroes.giveAway',
     'oxemHeroes.member',
+    'oxemHeroes.oxemView',
 ]
 
 MIDDLEWARE = [

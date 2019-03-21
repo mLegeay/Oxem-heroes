@@ -1,6 +1,6 @@
 from django.db import models
 
-from oxemHeroes.bot.constants import ADMIN_DONE, DONE
+from oxemHeroes.game.constants import ADMIN_DONE, DONE
 
 
 class GameQuerySet(models.QuerySet):

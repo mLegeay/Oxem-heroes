@@ -1,10 +1,9 @@
 from django.db import models
 from django.utils import timezone
 
-from oxemHeroes.bot.constants import ADMIN_DONE, DONE
 from oxemHeroes.classe.models import Classe
 from oxemHeroes.game.models import Game
-from oxemHeroes.gameMember.constants import LEVEL_LIST, XP_REQUIRE
+from oxemHeroes.gameMember.constants import DONE, LEVEL_LIST, XP_REQUIRE
 from oxemHeroes.member.models import Member
 
 

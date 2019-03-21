@@ -10,7 +10,7 @@ class ClasseQuerySet(models.QuerySet):
 
 class Classe(models.Model):
     """Modèle des classes d'OxemHeroes.
-    
+
        - name = nom de la classe
        - xp_comp = xp rapporté par la compétence
        - min_silver_comp = silver minimum remporté avec la compétence

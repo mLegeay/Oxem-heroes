@@ -11,6 +11,7 @@ import discord
 from oxemHeroes.command.constants import (ADMIN_DONE, ERRORS, GIVEAWAY,
                                           HELP_MESSAGE, PLAYER_COMMAND,
                                           SKILL_LIST)
+from oxemHeroes.command.exceptions import CommandError
 from oxemHeroes.command.models import Command
 from oxemHeroes.game.models import Game
 from oxemHeroes.gameMember.models import GameMember
@@ -76,10 +77,10 @@ class Commands(object):
             message = self.bonusxp(command, parameters)
 
         elif command.name == "addsilver":
-            message = self.addsilver(_message, parameters)
+            message = self.addsilver(command, _message, parameters)
 
         elif command.name == "addjeton":
-            message = self.addjeton(_message, parameters)
+            message = self.addjeton(command, _message, parameters)
 
         elif command.name == "giveaway":
             message = self.giveAway()
@@ -96,35 +97,43 @@ class Commands(object):
 
         return message
 
-    def addsilver(self, _message, parameters):
+    def addsilver(self, command, _message, parameters):
         """Ajoute des silvers pour un utilisateur donnée."""
 
-        if len(parameters) == 2 and _message.mentions:
-            gameMember = GameMember.objects.from_discord(_message.mentions[0])
+        try:
+            if len(parameters) == 2 and _message.mentions and int(parameters[0]):
+                gameMember = GameMember.objects.from_discord(_message.mentions[0])
 
-            if gameMember is not None:
-                silver = gameMember.add_silver(int(parameters[0]))
-                message = ADMIN_DONE['add_silver'].format(silver, gameMember.member.name)
+                if gameMember is not None:
+                    silver = gameMember.add_silver(int(parameters[0]))
+                    message = ADMIN_DONE['add_silver'].format(silver, gameMember.member.name)
 
+                else:
+                    message = ERRORS['player_dne']
             else:
-                message = ERRORS['player_dne']
-        else:
+                raise CommandError(command)
+
+        except (CommandError, ValueError):
             message = command.how_to
 
         return message
 
-    def addjeton(self, _message, parameters):
+    def addjeton(self, command, _message, parameters):
         """Ajoute des jetons pour un utilisateur donnée."""
 
-        if len(parameters) == 2 and _message.mentions:
-            gameMember = GameMember.objects.from_discord(_message.mentions[0])
+        try:
+            if len(parameters) == 2 and _message.mentions and int(parameters[0]):
+                gameMember = GameMember.objects.from_discord(_message.mentions[0])
 
-            if gameMember is not None:
-                token = gameMember.add_token(int(parameters[0]))
-                message = ADMIN_DONE['add_token'].format(token, gameMember.member.name)
+                if gameMember is not None:
+                    token = gameMember.add_token(int(parameters[0]))
+                    message = ADMIN_DONE['add_token'].format(token, gameMember.member.name)
+                else:
+                    message = ERRORS['player_dne']
             else:
-                message = ERRORS['player_dne']
-        else:
+                raise CommandError(command)
+
+        except (CommandError, ValueError):
             message = command.how_to
 
         return message

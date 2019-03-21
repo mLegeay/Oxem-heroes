@@ -66,6 +66,10 @@ def execute(send_message, command_name, parameters):
                 instance_classe = c_classe(gameMember)
                 message = instance_classe.process(command_name, send_message)
 
+            else:
+                instance_gameMember = c_gameMember()
+                files, message = instance_gameMember.process(command, gameMember, send_message, parameters)
+
         elif send_message.author.guild_permissions.administrator and command_name in ADMIN_COMMAND_LIST:
             instance_command = c_command()
             message = instance_command.admin_command(command, send_message, parameters)
