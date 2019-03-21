@@ -5,17 +5,16 @@ import asyncio
 from django.conf import settings
 
 import discord
-
 from discord.ext import commands
 from discord.ext.commands import Bot
-
-from oxemHeroes.bot.constants import (ADMIN_COMMAND_LIST, COMMAND_LIST,
+from oxemHeroes.bot.constants import (ADMIN_COMMAND_LIST, COMMAND_LIST, HELP_COMMAND,
                                       PLAYER_COMMAND, SKILL_LIST)
 from oxemHeroes.classe.commands import Commands as c_classe
 from oxemHeroes.command.commands import Commands as c_command
 from oxemHeroes.command.models import Command
 from oxemHeroes.gameMember.commands import Commands as c_gameMember
 from oxemHeroes.gameMember.models import GameMember
+from oxemHeroes.giveAway.commands import Commands as c_giveAway
 
 client = commands.Bot(command_prefix="!")
 
@@ -69,37 +68,18 @@ def execute(send_message, command_name, parameters):
 
         elif send_message.author.guild_permissions.administrator and command_name in ADMIN_COMMAND_LIST:
             instance_command = c_command()
-            message = instance_command.process(command, gameMember, send_message, parameters)
+            message = instance_command.admin_command(command, send_message, parameters)
 
         elif command_name == "participer":
-            message = Giveaway.objects.participer(send_message)
+            instance_command = c_giveAway()
+            message = instance_command.process(command, send_message)
 
         else:
             message = ERRORS['non_authorized']
 
     elif command_name in HELP_COMMAND:
-
-        if parameters:
-            command = Command.objects._get_command(parameters[0])
-
-            if command is not None:
-                message = "`{}`".format(command.how_to)
-            else:
-                message = ERRORS['command_dne']
-        else:
-            message = HELP_MESSAGE['start']
-
-            for each in PLAYER_COMMAND:
-                command = Command.objects._get_command(each)
-                message += "- {}: {}\n".format(command.name, command.description)
-
-            message += HELP_MESSAGE['classe']
-
-            for each in SKILL_LIST:
-                command = Command.objects._get_command(each)
-                message += "- {}: {}\n".format(command.name, command.description)
-
-            message += HELP_MESSAGE['end']
+        instance_command = c_command()
+        message = instance_command.help_command(parameters)
 
     else:
         message = ERRORS['command_dne']

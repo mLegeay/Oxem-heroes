@@ -25,6 +25,12 @@ class GiveawayQuerySet(models.QuerySet):
         return self._get_giveaway().participants['participants']
 
     def participer(self, send_message):
+        """Ajoute le membre en temps que participant du giveAway.
+
+           Si le joueur participe déjà au giveAway, renvoi un message au joueur pour le prévenir.
+           return :
+           - String message : message en réponse à la commande du joueur
+        """
         message = PARTICIPER
 
         member, created = Member.objects.from_message(send_message)

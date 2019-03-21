@@ -1,12 +1,20 @@
-"""Commande pour les classes.
+"""Commande pour les command.
 
--
+- help/aide : liste les commandes et comment les utiliser
+- addjeton : ajoute des jetons à un utilisateur donnée
+- add silver : ajoute des silvers à un utilisateur donnée
+- bonusxp : modifier le bonus d'xp sur l'expérience gagnée
+- giveaway : créer un giveaway
 """
 
 import discord
-
+from oxemHeroes.command.constants import (ADMIN_DONE, ERRORS, GIVEAWAY,
+                                          HELP_MESSAGE, PLAYER_COMMAND,
+                                          SKILL_LIST)
+from oxemHeroes.command.models import Command
 from oxemHeroes.game.models import Game
 from oxemHeroes.gameMember.models import GameMember
+from oxemHeroes.giveAway.models import Giveaway
 
 
 class Commands(object):
@@ -15,30 +23,71 @@ class Commands(object):
     def __init__(self):
         """Initialise les valeurs de la classe."""
 
-    def process(self, command, gameMember, _message, parameters):
+    def help_command(self, parameters):
         """variables :
+           - Command command : commande pour laquelle de l'aide est recherché
+           - String message : message à renvoyer à l'utilisateur
 
            parameters:
+           - [parameters] liste des paramètres qui suivent la commande
 
            return:
+           - String message : message à renvoyer à l'utilisateur
         """
 
-        if command.name == "bonusxp":
-            message = self.bonusxp(command, gameMember, parameters)
+        if parameters:
+            command = Command.objects.from_name(parameters[0])
 
-        elif command.name == "addsilver":
-            message = self.addsilver(gameMember, _message, parameters)
+            if command is not None:
+                message = "`{}`".format(command.how_to)
+            else:
+                message = ERRORS['command_dne']
+        else:
+            message = HELP_MESSAGE['start']
 
-        elif command.name == "addjeton":
-            message = self.addjeton(gameMember, _message, parameters)
+            for each in PLAYER_COMMAND:
+                command = Command.objects.from_name(each)
+                message += "- {}: {}\n".format(command.name, command.description)
 
-        elif command.name == "giveaway":
-            message = self.giveAway(gameMember)
+            message += HELP_MESSAGE['classe']
+
+            for each in SKILL_LIST:
+                command = Command.objects.from_name(each)
+                message += "- {}: {}\n".format(command.name, command.description)
+
+            message += HELP_MESSAGE['end']
 
         return message
 
-    def bonusxp(self, command, gameMember, parameters):
-        """."""
+    def admin_command(self, command, _message, parameters):
+        """variables :
+           - String message : message à renvoyer à l'utilisateur
+
+           parameters:
+           - Command command : commande executé par l'utilisateur
+           - String _message : message de l'utilisateur contenant la commande
+           - [parameters] : paramètres ajouté à la suite de la commande
+
+           return:
+           - String message : message à renvoyer à l'utilisateur
+        """
+
+        if command.name == "bonusxp":
+            message = self.bonusxp(command, parameters)
+
+        elif command.name == "addsilver":
+            message = self.addsilver(_message, parameters)
+
+        elif command.name == "addjeton":
+            message = self.addjeton(_message, parameters)
+
+        elif command.name == "giveaway":
+            message = self.giveAway()
+
+        return message
+
+    def bonusxp(self, command, parameters):
+        """Modifie le multiplicateur d'expérience."""
 
         if parameters:
             message = Game.objects.alter_xp(parameters[0])
@@ -47,13 +96,16 @@ class Commands(object):
 
         return message
 
-    def addsilver(self, gameMember, _message, parameters):
-        """."""
+    def addsilver(self, _message, parameters):
+        """Ajoute des silvers pour un utilisateur donnée."""
+
         if len(parameters) == 2 and _message.mentions:
             gameMember = GameMember.objects.from_discord(_message.mentions[0])
 
             if gameMember is not None:
-                message = gameMember.add_silver(int(parameters[0]))
+                silver = gameMember.add_silver(int(parameters[0]))
+                message = ADMIN_DONE['add_silver'].format(silver, gameMember.member.name)
+
             else:
                 message = ERRORS['player_dne']
         else:
@@ -61,13 +113,15 @@ class Commands(object):
 
         return message
 
-    def addjeton(self, gameMember, _message, parameters):
-        """."""
+    def addjeton(self, _message, parameters):
+        """Ajoute des jetons pour un utilisateur donnée."""
+
         if len(parameters) == 2 and _message.mentions:
             gameMember = GameMember.objects.from_discord(_message.mentions[0])
 
             if gameMember is not None:
-                message = gameMember.add_token(int(parameters[0]))
+                token = gameMember.add_token(int(parameters[0]))
+                message = ADMIN_DONE['add_token'].format(token, gameMember.member.name)
             else:
                 message = ERRORS['player_dne']
         else:
@@ -75,10 +129,11 @@ class Commands(object):
 
         return message
 
-    def giveAway(self, gameMember):
-        """."""
+    def giveAway(self):
+        """Démarre un giveaway."""
+
         Giveaway.objects.all().delete()
         Giveaway.objects.create(participants={'participants': []})
-        message = "Giveaway créé avec succès"
+        message = GIVEAWAY['success']
 
         return message

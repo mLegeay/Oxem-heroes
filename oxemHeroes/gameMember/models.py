@@ -93,14 +93,14 @@ class GameMember(models.Model):
         self.silver += silver
         self.save(update_fields=['silver'])
         Game.objects.add_silver(silver)
-        return ADMIN_DONE['add_silver'].format(silver, self.member.name)
+        return silver
 
     def add_token(self, token):
         """Ajoute des jetons au joueur."""
 
         self.token += token
         self.save(update_fields=['token'])
-        return ADMIN_DONE['add_token'].format(token, self.member.name)
+        return token
 
     def add_experience(self, experience):
         """Ajoute de l'expérience au joueur."""

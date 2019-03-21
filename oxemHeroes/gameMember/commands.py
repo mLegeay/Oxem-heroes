@@ -55,7 +55,7 @@ class Commands(object):
 
     def choisir(self, command, gameMember, _message, parameters):
         """Gère le choix du héros par le joueur.
-        
+
            Retourne un message et des fichiers de type DiscordFile.
         """
 
