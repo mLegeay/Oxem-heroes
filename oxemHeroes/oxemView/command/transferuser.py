@@ -42,6 +42,7 @@ class Command(BaseCommand):
                                       joined_at=each.joined_at,
                                       experience=each.experience,
                                       silver=each.silver,
+                                      max_silver=each.silver,
                                       token=each.token,)
 
         for each in member:

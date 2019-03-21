@@ -24,6 +24,8 @@ class Classe(models.Model):
     min_silver_comp = models.IntegerField(default=0)
     max_silver_comp = models.IntegerField(default=0)
 
+    price = models.IntegerField(default=0)
+
     cd_comp = models.IntegerField(default=0)  # Temps en minute
 
     objects = ClasseQuerySet.as_manager()

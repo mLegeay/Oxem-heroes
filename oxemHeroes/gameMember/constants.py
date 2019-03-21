@@ -148,6 +148,6 @@ DONE = {
 # deja_choisis : l'utilisateur a déjà choisi un héros
 # hero_dne : l'utilisateur a indiqué un héros qui n'existe pas
 ERRORS = {
-    'deja_choisis': "Vous avez déjà choisi un héros.",
+    'not_enough_token': "Tu n'as pas assez de jeton pour changer de héros.",
     'hero_dne': "Ce héros n'existe pas.",
 }

@@ -1,6 +1,8 @@
 from django.db import models
 from django.utils import timezone
 
+from django.contrib.postgres.fields import JSONField
+
 from oxemHeroes.classe.models import Classe
 from oxemHeroes.game.models import Game
 from oxemHeroes.gameMember.constants import DONE, LEVEL_LIST, XP_REQUIRE
@@ -46,6 +48,7 @@ class GameMemberQuerySet(models.QuerySet):
            return:
            - str (message indiquant que la création c'est bien déroulée.)
         """
+
         member, created = Member.objects.from_message(message)
         classe = Classe.objects.get_classe(name)
 
@@ -69,7 +72,10 @@ class GameMember(models.Model):
 
     experience = models.IntegerField(default=0)
     silver = models.IntegerField(default=0)
+    max_silver = models.IntegerField(default=0)
     token = models.IntegerField(default=0)
+
+    inventory = JSONField(default={'hero': []})
 
     objects = GameMemberQuerySet.as_manager()
 
@@ -90,6 +96,7 @@ class GameMember(models.Model):
         """Ajoute des silvers au joueur."""
 
         self.silver += silver
+        self.max_silver += silver
         self.save(update_fields=['silver'])
         Game.objects.add_silver(silver)
         return silver
@@ -125,3 +132,21 @@ class GameMember(models.Model):
         """Renvoi un message contenant les jetons du joueur."""
 
         return DONE['token_user'].format(self.token)
+
+    def update_character(self, name):
+        """L'utilisateur met à jour son personnage.
+
+           Si la classe existe, elle est attribué au joueur.
+
+           return:
+           - str (message indiquant que la création c'est bien déroulée.)
+        """
+
+        classe = Classe.objects.get_classe(name)
+
+        if not isinstance(classe, str):
+            self.classe = classe
+            self.token -= 1
+            self.save(update_fields=['classe', 'token'])
+
+        return DONE['choisir'].format(name)

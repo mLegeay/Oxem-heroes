@@ -61,15 +61,18 @@ class Commands(object):
 
         files = None
 
-        if gameMember is None and parameters:
+        if parameters or gameMember.jeton != 0:
             if parameters[0].lower() in HERO_LIST:
-                message = GameMember.objects.create_character(_message, parameters[0].lower())
+                if GameMember is None:
+                    message = GameMember.objects.create_character(_message, parameters[0].lower())
+                else:
+                    message = gameMember.update_character(parameters[0].lower())
 
             else:
                 message = ERRORS['hero_dne']
 
-        elif gameMember is not None and parameters:
-            message = ERRORS['deja_choisis']
+        elif gameMember is not None and parameters and gameMember.jeton == 0:
+            message = ERRORS['not_enough_token']
 
         else:
             message = command.how_to
