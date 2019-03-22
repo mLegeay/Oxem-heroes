@@ -1,5 +1,5 @@
 from oxemHeroes.classe.models import Classe
-from oxemHeroes.command.models import Command
+from oxemHeroes.command.models import Command as Command_models
 from oxemHeroes.commandHistory.models import CommandHistory
 from oxemHeroes.game.models import Game
 from oxemHeroes.gameMember.models import GameMember
@@ -27,26 +27,33 @@ class Command(BaseCommand):
         gameMember = old_GM.objects.all()
         member = old_Member.objects.all()
 
-        for each in commandHistory:
-            CommandHistory.objects.create(member=each.member,
-                                          command=each.command,
-                                          last_used=each.last_used,
-                                          bonus=each.bonus)
-
-        for each in game:
-            Game.objects.create(silver=each.silver, bonus_xp=each.bonus_xp)
+        for each in member:
+            Member.objects.create(discord_id=each.discord_id,
+                                  name=each.name,
+                                  joined_at=each.joined_at,
+                                  discriminator=each.discriminator)
 
         for each in gameMember:
-            GameMember.objects.create(member=each.member,
-                                      classe=each.classe,
+            member = Member.objects.get(discord_id=each.member.discord_id)
+            classe = Classe.objects.get_classe(each.classe.name)
+
+            GameMember.objects.create(member=member,
+                                      classe=classe,
                                       joined_at=each.joined_at,
                                       experience=each.experience,
                                       silver=each.silver,
                                       max_silver=each.silver,
                                       token=each.token,)
 
-        for each in member:
-            Member.objects.create(discord_id=each.discord_id,
-                                  name=each.name,
-                                  joined_at=each.joined_at,
-                                  discriminator=each.discriminator)
+        for each in commandHistory:
+            member = Member.objects.get(discord_id=each.member.discord_id)
+            command = Command_models.objects.from_name(each.command.name)
+
+            CommandHistory.objects.create(member=member,
+                                          command=command,
+                                          last_used=each.last_used,
+                                          bonus=each.bonus)
+
+        for each in game:
+            Game.objects.all().delete()
+            Game.objects.create(silver=each.silver, bonus_xp=each.bonus_xp)
