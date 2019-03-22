@@ -61,7 +61,7 @@ class Commands(object):
 
         files = None
 
-        if parameters or gameMember.jeton != 0:
+        if parameters or gameMember.token != 0:
             if parameters[0].lower() in HERO_LIST:
                 if GameMember is None:
                     message = GameMember.objects.create_character(_message, parameters[0].lower())
@@ -71,13 +71,13 @@ class Commands(object):
             else:
                 message = ERRORS['hero_dne']
 
-        elif gameMember is not None and parameters and gameMember.jeton == 0:
+        elif gameMember is not None and parameters and gameMember.token == 0:
             message = ERRORS['not_enough_token']
 
         else:
             message = command.how_to
             files = []
-            path = "{}/oxemHeroes/bot/static/image".format(settings.DJANGO_ROOT)
+            path = "{}/oxemHeroes/classe/static/image".format(settings.DJANGO_ROOT)
             for file in os.listdir(path):
                 if os.path.isfile(os.path.join(path, file)):
                     files.append(discord.File(os.path.join(path, file)))
