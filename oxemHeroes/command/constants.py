@@ -20,6 +20,7 @@ ADMIN_DONE = {
 
 ERRORS = {
     'command_dne': "La commande n'existe pas ...",
+    'no_participant': "Il n'y a pas de participants au giveaway ...",
     'player_dne': "Ce joueur n'existe pas",
 }
 
@@ -31,4 +32,5 @@ HELP_MESSAGE = {
 
 GIVEAWAY = {
     'success': "Giveaway créé avec succès",
+    'winner': "Le gagnant est : {} ! Bravo à lui/elle !"
 }

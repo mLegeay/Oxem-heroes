@@ -133,21 +133,27 @@ HERO_LIST = [
 ]
 
 # choisir : message de choix de héros
-# silver_global : message affichant les silvers du serveur
+# recruter : message de recrutement de héros
 # silver_user : message affichant les silvers du joueur
+# silver_user_max : message affichant les silvers cumulés du joueur
 # token_user : message affichant les jetons du joueur
 # xp : message affichant l'xp du joueur
 DONE = {
     'choisir': "Vous jouez désormais le héros {} !",
-    'silver_global': "Nous disposons actuellement de {} Silver",
-    'silver_user': "{} a récolté {} Silver pour la communauté !",
+    'recruter': "Vous venez d'acheter le héros {} !",
+    'silver_user': "Tu possèdes actuellement {} Silver !",
+    'silver_user_max': "Tu as récolté {} Silver !",
     'token_user': "Tu possèdes {} jetons.",
     'xp': "【 {} 】 Niveau {} » {} XP",
 }
 
-# deja_choisis : l'utilisateur a déjà choisi un héros
 # hero_dne : l'utilisateur a indiqué un héros qui n'existe pas
+# not_enough_silver : l'utilisateur ne possède pas assez de silvers
+# not_enough_token : l'utilisateur ne possède pas assez de jetons
+# not_own : l'utilisateur ne possède pas le héros
 ERRORS = {
-    'not_enough_token': "Tu n'as pas assez de jeton pour changer de héros.",
     'hero_dne': "Ce héros n'existe pas.",
+    'not_enough_silver': "Tu n'as pas assez de silver pour acheter ce héros.",
+    'not_enough_token': "Tu n'as pas assez de jeton pour changer de héros.",
+    'not_own': "Tu ne possède pas ce héros (!acheter).",
 }

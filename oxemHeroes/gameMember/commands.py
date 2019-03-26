@@ -1,7 +1,11 @@
 """Commande pour les gameMember.
 
 - choisir : Permet de choisir un héros parmis la liste des héros
+- recruter : Permet de recruter un héros
 - xp : Renvoi un message contenant le niveau, le titre et l'xp obtenu jusque la
+- silver : Renvoi un message contenant le nombre de silver possédé par un joueur
+- contribution : ???????? a changer ??????????
+- jeton : Renvoi un message contenant le nombre de silver possédé par un joueur
 """
 import os
 
@@ -39,14 +43,17 @@ class Commands(object):
         if command.name == "choisir":
             files, message = self.choisir(command, gameMember, _message, parameters)
 
+        elif command.name == "recruter":
+            files, message = self.get_experience(gameMember)
+
         elif command.name == "xp":
             message = self.get_experience(gameMember)
 
         elif command.name == "silver":
             message = self.get_silver(gameMember)
 
-        elif command.name == "contribution":
-            message = self.get_silver(gameMember)
+        elif command.name == "silvermax":
+            message = self.get_silver_max(gameMember)
 
         elif command.name == "jeton":
             message = self.get_token(gameMember)
@@ -63,16 +70,42 @@ class Commands(object):
 
         if parameters or gameMember.token != 0:
             if parameters[0].lower() in HERO_LIST:
-                if GameMember is None:
+                if gameMember is None:
                     message = GameMember.objects.create_character(_message, parameters[0].lower())
                 else:
-                    message = gameMember.update_character(parameters[0].lower())
+                    if parameters[0].lower() in gameMember.inventory['hero']:
+                        message = gameMember.update_character(parameters[0].lower())
+                    else:
+                        message = ERRORS['not_own']
 
             else:
                 message = ERRORS['hero_dne']
 
         elif gameMember is not None and parameters and gameMember.token == 0:
             message = ERRORS['not_enough_token']
+
+        else:
+            message = command.how_to
+            files = []
+            path = "{}/oxemHeroes/classe/static/image".format(settings.DJANGO_ROOT)
+            for file in os.listdir(path):
+                if os.path.isfile(os.path.join(path, file)):
+                    files.append(discord.File(os.path.join(path, file)))
+
+        return files, message
+
+    def recruter(self, command, gameMember, _message, parameters):
+        """Permet d'acheter un héro et l'ajouter à sa liste de héros possédés.
+
+           Retourne un message et des DiscordFiles si l'utilisateur souhaite découvrir
+           quels sont les héros disponible à l'achat.
+        """
+
+        files = None
+
+        if parameters:
+            if parameters[0].lower() in HERO_LIST:
+                message = gameMember.buy_hero()
 
         else:
             message = command.how_to
@@ -94,7 +127,7 @@ class Commands(object):
 
     def get_silver_max(self, gameMember):
         """Retourne un message contenant les silvers accumulés joueur."""
-        return gameMember.get_silver()
+        return gameMember.get_silvermax()
 
     def get_token(self, gameMember):
         """Retourne un message contenant les jetons du joueur."""

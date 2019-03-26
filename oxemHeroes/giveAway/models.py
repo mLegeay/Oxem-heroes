@@ -1,7 +1,7 @@
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 
-from oxemHeroes.giveAway.constants import PARTICIPER, PARTICIPER_ERROR
+from oxemHeroes.giveAway.constants import PARTICIPER, PARTICIPER_ERROR, PARTICIPER_NO_GIVEAWAY
 from oxemHeroes.member.models import Member
 
 
@@ -22,7 +22,12 @@ class GiveawayQuerySet(models.QuerySet):
            - [participants] (liste des participants d'un giveAway)
         """
 
-        return self._get_giveaway().participants['participants']
+        giveaway = self._get_giveaway()
+
+        if giveaway is None:
+            return None
+        else:
+            return self._get_giveaway().participants['participants']
 
     def participer(self, send_message):
         """Ajoute le membre en temps que participant du giveAway.
@@ -31,16 +36,19 @@ class GiveawayQuerySet(models.QuerySet):
            return :
            - String message : message en réponse à la commande du joueur
         """
-        message = PARTICIPER
 
         member, created = Member.objects.from_message(send_message)
 
         giveaway = self._get_giveaway()
         participants = self._get_participants()
 
-        if member.__str__() not in participants:
+        if participants is None:
+            message = PARTICIPER_NO_GIVEAWAY
+
+        elif member.__str__() not in participants:
             giveaway.participants['participants'].append(member.__str__())
             giveaway.save()
+            message = PARTICIPER
 
         else:
             message = PARTICIPER_ERROR

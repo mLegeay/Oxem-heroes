@@ -5,7 +5,7 @@ from django.contrib.postgres.fields import JSONField
 
 from oxemHeroes.classe.models import Classe
 from oxemHeroes.game.models import Game
-from oxemHeroes.gameMember.constants import DONE, LEVEL_LIST, XP_REQUIRE
+from oxemHeroes.gameMember.constants import DONE, ERRORS, LEVEL_LIST, XP_REQUIRE
 from oxemHeroes.member.models import Member
 
 
@@ -57,6 +57,28 @@ class GameMemberQuerySet(models.QuerySet):
 
         return DONE['choisir'].format(name)
 
+    def buy_hero(self, name):
+        """L'utilisateur recrute un personnage.
+
+           Si la classe existe et que le joueur possède assez de silver,
+           elle est ajouté à l'inventaire héros du joueur.
+
+           return:
+           - str (message indiquant que l'achat c'est bien ou mal déroulée.)
+        """
+
+        classe = Classe.objects.get_classe(name)
+
+        if not isinstance(classe, str):
+            if classe.price <= self.silver:
+                self.inventory['hero'].append(classe.name)
+                self.silver -= classe.price
+                message = DONE['recruter']
+            else:
+                message = ERRORS['not_enough_silver']
+
+        return DONE['choisir'].format(name)
+
 
 class GameMember(models.Model):
     """Modèle des informations sur les joueurs jouant à OxemHeroes."""
@@ -75,7 +97,7 @@ class GameMember(models.Model):
     max_silver = models.IntegerField(default=0)
     token = models.IntegerField(default=0)
 
-    inventory = JSONField(default={'hero': []})
+    inventory = JSONField(default={'hero': ['oxem', 'shosizuke', 'talkoran']})
 
     objects = GameMemberQuerySet.as_manager()
 
@@ -97,7 +119,7 @@ class GameMember(models.Model):
 
         self.silver += silver
         self.max_silver += silver
-        self.save(update_fields=['silver'])
+        self.save(update_fields=['max_silver', 'silver'])
         Game.objects.add_silver(silver)
         return silver
 
@@ -126,7 +148,12 @@ class GameMember(models.Model):
     def get_silver(self):
         """Renvoi un message contenant les silvers du joueur."""
 
-        return DONE['silver_user'].format(self.member.name, self.silver)
+        return DONE['silver_user'].format(self.silver)
+
+    def get_silvermax(self):
+        """Renvoi un message contenant les silvers cumulés du joueur."""
+
+        return DONE['silver_user_max'].format(self.max_silver)
 
     def get_token(self):
         """Renvoi un message contenant les jetons du joueur."""

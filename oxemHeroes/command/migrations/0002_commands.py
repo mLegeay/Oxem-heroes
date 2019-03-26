@@ -20,12 +20,12 @@ def add_commands(apps, schema_editor):
                            how_to="!xp")
 
     Command.objects.create(name="silver",
-                           description="Permet d'afficher la quantité de silver générée par les membres de la commu.",
-                           how_to="!choisir <heros> (retirer les <> et indiquer le nom du héros de votre choix.")
+                           description="Permet d'afficher la quantité de silver possédée.",
+                           how_to="!silver")
 
-    Command.objects.create(name="contribution",
-                           description="Permet d'afficher votre contribution aux silver totaux.",
-                           how_to="!contribution")
+    Command.objects.create(name="silvermax",
+                           description="Permet d'afficher la quantité de silver récoltée depuis le début du serveur.",
+                           how_to="!silvermax")
 
     Command.objects.create(name="jeton",
                            description="Permet d'afficher votre quantité de jetons possédée.",
@@ -62,6 +62,10 @@ def add_commands(apps, schema_editor):
     Command.objects.create(name="participer",
                            description="Participer à un giveaway.",
                            how_to="!participer")
+
+    Command.objects.create(name="gagnant",
+                           description="Designe un gagnant au giveAway.",
+                           how_to="!gagnant")
 
 
 class Migration(migrations.Migration):

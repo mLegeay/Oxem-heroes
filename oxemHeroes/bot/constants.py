@@ -125,9 +125,9 @@ LEVEL_LIST = {
 
 COMMAND_LIST = [
     "choisir",
-    "contribution",
     "jeton",
     "silver",
+    "silvermax",
     "xp",
     "addjeton",
     "addsilver",
@@ -138,13 +138,14 @@ COMMAND_LIST = [
     "pillage",
     "giveaway",
     "participer",
+    "gagnant",
 ]
 
 PLAYER_COMMAND = [
     "choisir",
-    "contribution",
     "jeton",
     "silver",
+    "silvermax",
     "xp",
 ]
 
@@ -159,6 +160,7 @@ ADMIN_COMMAND_LIST = [
     "addsilver",
     "bonusxp",
     "giveaway",
+    "gagnant",
 ]
 
 HERO_LIST = [

@@ -19,6 +19,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='gamemember',
             name='inventory',
-            field=django.contrib.postgres.fields.jsonb.JSONField(default={'hero': []}),
+            field=django.contrib.postgres.fields.jsonb.JSONField(default={'hero': ['oxem', 'shosizuke', 'talkoran']}),
         ),
     ]

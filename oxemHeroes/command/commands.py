@@ -7,6 +7,8 @@
 - giveaway : créer un giveaway
 """
 
+from random import *
+
 import discord
 from oxemHeroes.command.constants import (ADMIN_DONE, ERRORS, GIVEAWAY,
                                           HELP_MESSAGE, PLAYER_COMMAND,
@@ -85,6 +87,9 @@ class Commands(object):
         elif command.name == "giveaway":
             message = self.giveAway()
 
+        elif command.name == "gagnant":
+            message = self.winner()
+
         return message
 
     def bonusxp(self, command, parameters):
@@ -144,5 +149,19 @@ class Commands(object):
         Giveaway.objects.all().delete()
         Giveaway.objects.create(participants={'participants': []})
         message = GIVEAWAY['success']
+
+        return message
+
+    def winner(self):
+        """Donne un nom de gagnant et supprime le giveaway."""
+
+        participants = Giveaway.objects.first().participants['participants']
+
+        if len(participants) != 0:
+            winner_member = participants[randint(0, len(participants) - 1)]
+            Giveaway.objects.all().delete()
+            message = GIVEAWAY['winner'].format(winner_member)
+        else:
+            message = ERRORS['no_participant']
 
         return message
