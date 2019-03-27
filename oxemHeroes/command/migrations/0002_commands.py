@@ -64,8 +64,8 @@ def add_commands(apps, schema_editor):
                            how_to="!participer")
 
     Command.objects.create(name="gagnant",
-                           description="Designe un gagnant au giveAway.",
-                           how_to="!gagnant")
+                           description="Designe un/des gagnant(s) au giveAway.",
+                           how_to="!gagnant <2> (retirer les <> et indiquer un nombre de gagnant, ce paramètre est optionnel)")
 
 
 class Migration(migrations.Migration):

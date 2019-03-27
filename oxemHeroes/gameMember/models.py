@@ -112,7 +112,7 @@ class GameMember(models.Model):
         for key, value in enumerate(XP_REQUIRE):
             if xp < value:
                 return key
-        return XP_REQUIRE.keys()[-1]
+        return list(XP_REQUIRE.keys())[-1]
 
     def add_silver(self, silver):
         """Ajoute des silvers au joueur."""

@@ -20,7 +20,10 @@ ADMIN_DONE = {
 
 ERRORS = {
     'command_dne': "La commande n'existe pas ...",
+    'invalid_parameter_ga': "{} n'est pas une valeur valide, le nombre de gagnant doit être strictement supérieur à 0",
+    'no_giveaway': "Pas de giveaway en cours",
     'no_participant': "Il n'y a pas de participants au giveaway ...",
+    'not_enough_participants': "Il n'y a pas assez de participants par rapport aux nombre de gagnants choisi",
     'player_dne': "Ce joueur n'existe pas",
 }
 
@@ -32,5 +35,6 @@ HELP_MESSAGE = {
 
 GIVEAWAY = {
     'success': "Giveaway créé avec succès",
-    'winner': "Le gagnant est : {} ! Bravo à lui/elle !"
+    'winner': "Le gagnant est : {} ! Bravo à lui/elle !",
+    'winners': "Les gagnants sont : {} ! Bravo à eux !"
 }

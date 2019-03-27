@@ -13,6 +13,7 @@ import discord
 from random import *
 from oxemHeroes.classe.constants import ERRORS, OXEM, SHOSIZUKE, TALKORAN
 from oxemHeroes.commandHistory.models import CommandHistory
+from oxemHeroes.game.models import Game
 
 
 class Commands(object):
@@ -99,7 +100,7 @@ class Commands(object):
 
         self.message = SHOSIZUKE['comp_success'].format(self.gameMember.member.name,
                                                         is_crit,
-                                                        self.experience,
+                                                        int(self.experience * (1 + Game.objects.get_bonusxp() / 100)),
                                                         self.silver)
 
         return force, bonus
@@ -118,7 +119,9 @@ class Commands(object):
         bonus = int(len(list(filter(lambda connected: connected.status == discord.Status.online,
                                     member_list))) * OXEM['bonus'])
         self.experience += bonus
-        self.message = OXEM['comp_success'].format(self.gameMember.member.name, self.experience, self.silver)
+        self.message = OXEM['comp_success'].format(self.gameMember.member.name,
+                                                   int(self.experience * (1 + Game.objects.get_bonusxp() / 100)),
+                                                   self.silver)
 
     def pillage(self, success):
         """Compétence de Talkoran.
@@ -141,7 +144,10 @@ class Commands(object):
 
         else:
             bonus = -1
-            self.message = TALKORAN['comp_failed'].format(self.gameMember.member.name, self.experience, self.silver)
+            self.message = TALKORAN['comp_failed'].format(self.gameMember.member.name,
+                                                          int(self.experience * (1 +
+                                                                                 Game.objects.get_bonusxp() / 100)),
+                                                          self.silver)
 
         return bonus, success
 

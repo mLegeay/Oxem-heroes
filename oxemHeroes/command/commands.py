@@ -18,6 +18,7 @@ from oxemHeroes.command.models import Command
 from oxemHeroes.game.models import Game
 from oxemHeroes.gameMember.models import GameMember
 from oxemHeroes.giveAway.models import Giveaway
+from oxemHeroes.utils import check_param_type
 
 
 class Commands(object):
@@ -88,7 +89,7 @@ class Commands(object):
             message = self.giveAway()
 
         elif command.name == "gagnant":
-            message = self.winner()
+            message = self.winner(command, parameters)
 
         return message
 
@@ -152,16 +153,49 @@ class Commands(object):
 
         return message
 
-    def winner(self):
+    def winner(self, command, parameters):
         """Donne un nom de gagnant et supprime le giveaway."""
 
-        participants = Giveaway.objects.first().participants['participants']
+        participants = Giveaway.objects.first()
 
-        if len(participants) != 0:
-            winner_member = participants[randint(0, len(participants) - 1)]
-            Giveaway.objects.all().delete()
-            message = GIVEAWAY['winner'].format(winner_member)
+        if participants is not None:
+            participants = participants.participants['participants']
+
+            if len(parameters) != 0:
+                if check_param_type("int", parameters[0]):
+                    gagnants = int(parameters[0])
+                    if len(participants) >= gagnants:
+                        if gagnants > 0:
+                            winner_list = []
+
+                            while len(winner_list) < gagnants:
+                                winner_member = participants[randint(0, len(participants) - 1)]
+                                if winner_member not in winner_list:
+                                    winner_list.append(winner_member)
+
+                            for each in winner_list:
+                                message = "{} ".format(each)
+
+                            message = GIVEAWAY['winners'].format(message)
+                            Giveaway.objects.all().delete()
+
+                        else:
+                            message = ERRORS['invalid_parameter_ga'].format(gagnants)
+
+                    else:
+                        message = ERRORS['not_enough_participants']
+
+                else:
+                    message = command.how_to
+
+            elif len(participants) != 0:
+                winner_member = participants[randint(0, len(participants) - 1)]
+                Giveaway.objects.all().delete()
+                message = GIVEAWAY['winner'].format(winner_member)
+
+            else:
+                message = ERRORS['no_participant']
         else:
-            message = ERRORS['no_participant']
+            message = ERRORS['no_giveaway']
 
         return message
