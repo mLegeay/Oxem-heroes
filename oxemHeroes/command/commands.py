@@ -39,7 +39,7 @@ class Commands(object):
            - String message : message à renvoyer à l'utilisateur
         """
 
-        if parameters:
+        if len(parameters) != 0:
             command = Command.objects.from_name(parameters[0])
 
             if command is not None:
