@@ -7,8 +7,8 @@ from django.conf import settings
 import discord
 from discord.ext import commands
 from discord.ext.commands import Bot
-from oxemHeroes.bot.constants import (ADMIN_COMMAND_LIST, COMMAND_LIST, ERRORS,
-                                      HELP_COMMAND, PLAYER_COMMAND, SKILL_LIST)
+from oxemHeroes.constants import (ADMIN_COMMAND_LIST, COMMAND_LIST, ERRORS,
+                                  HELP_COMMAND, PLAYER_COMMAND, SKILL_LIST)
 from oxemHeroes.classe.commands import Commands as c_classe
 from oxemHeroes.command.commands import Commands as c_command
 from oxemHeroes.command.models import Command

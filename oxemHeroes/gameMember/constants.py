@@ -147,11 +147,13 @@ DONE = {
     'xp': "【 {} 】 Niveau {} » {} XP",
 }
 
+# already_hero : l'utilisateur a indiqué un héros qu'il joue déjà
 # hero_dne : l'utilisateur a indiqué un héros qui n'existe pas
 # not_enough_silver : l'utilisateur ne possède pas assez de silvers
 # not_enough_token : l'utilisateur ne possède pas assez de jetons
 # not_own : l'utilisateur ne possède pas le héros
 ERRORS = {
+    'already_hero': "Vous jouez déjà ce héros.",
     'hero_dne': "Ce héros n'existe pas.",
     'not_enough_silver': "Tu n'as pas assez de silver pour acheter ce héros.",
     'not_enough_token': "Tu n'as pas assez de jeton pour changer de héros.",

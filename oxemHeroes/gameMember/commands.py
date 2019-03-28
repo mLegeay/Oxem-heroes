@@ -73,8 +73,12 @@ class Commands(object):
                 if gameMember is None:
                     message = GameMember.objects.create_character(_message, parameters[0].lower())
                 else:
-                    if parameters[0].lower() in gameMember.inventory['hero']:
+                    if gameMember.classe.name == parameters[0].lower():
+                        message = ERRORS['already_hero']
+
+                    elif parameters[0].lower() in gameMember.inventory['hero']:
                         message = gameMember.update_character(parameters[0].lower())
+
                     else:
                         message = ERRORS['not_own']
 
