@@ -162,6 +162,7 @@ DONE = {
 # not_own : l'utilisateur ne possède pas le héros
 ERRORS = {
     'already_hero': "Vous jouez déjà ce héros.",
+    'already_own': "Vous possédez déjà ce héros.",
     'hero_dne': "Ce héros n'existe pas.",
     'not_enough_silver': "Tu n'as pas assez de silver pour recruter ce héros, il coûte {} silver.",
     'not_enough_token': "Tu n'as pas assez de jeton pour changer de héros.",

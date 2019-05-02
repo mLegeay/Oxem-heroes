@@ -114,8 +114,14 @@ class Commands(object):
         files = None
 
         if parameters:
-            if parameters[0].lower() in HERO_LIST:
+            if parameters[0].lower() in gameMember.inventory['hero']:
+                message = ERRORS['already_own']
+
+            elif parameters[0].lower() in HERO_LIST:
                 message = gameMember.buy_hero(parameters[0].lower())
+
+            else:
+                message = ERRORS['hero_dne']
 
         else:
             message = command.how_to + "\n```Css\n [/!\ Lord Typus s'écrit lord_typus /!\]```"
