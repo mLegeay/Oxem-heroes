@@ -39,8 +39,7 @@ async def on_message(message):
         return
 
     bonus_xp = CommandHistory.objects.filter(command=Command.objects.from_name("potion"))
-
-    if bonus_xp is not None:
+    if bonus_xp:
         if (timezone.now() - bonus_xp.latest("last_used").last_used).total_seconds()//60 > 45 and Game.objects.get_bonusxp() == 30:
             Game.objects.alter_xp(0)
 
