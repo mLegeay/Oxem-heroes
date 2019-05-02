@@ -11,7 +11,7 @@
 
 import discord
 from random import *
-from oxemHeroes.classe.constants import ERRORS, OXEM, SHOSIZUKE, TALKORAN
+from oxemHeroes.classe.constants import ERRORS, OXEM, SHOSIZUKE, TALKORAN, TYPUS
 from oxemHeroes.commandHistory.models import CommandHistory
 from oxemHeroes.game.models import Game
 
@@ -65,6 +65,9 @@ class Commands(object):
 
         elif command_name == "pillage" and self.gameMember.classe.name == "talkoran":
             bonus, success = self.pillage(success)
+
+        elif command_name == "potion" and self.gameMember.classe.name == "lord_typus":
+            self.potion()
 
         else:
             self.message = ERRORS['non_authorized']
@@ -150,6 +153,20 @@ class Commands(object):
                                                           self.silver)
 
         return bonus, success
+
+    def potion(self):
+        """Compétence de lord typus.
+
+           Lord Typus active un bonus de 30% à l'xp globale
+
+           variable:
+           - Tuple member_list : liste des membres du serveur.
+        """
+
+        Game.objects.alter_xp(30)
+        self.message = TYPUS['comp_success'].format(self.gameMember.member.name,
+                                                    int(self.experience * (1 + Game.objects.get_bonusxp() / 100)),
+                                                    self.silver)
 
     def can_use(self, bonus, _message, force, success, command_name):
         """Vérifie si la commande de l'utilisateur peut être executé en fonction du cooldown."""

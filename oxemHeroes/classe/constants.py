@@ -27,6 +27,10 @@ TALKORAN = {
                     "qui avait anticipée son attaque sur le village ▶️ Perte du bonus 【 {} XP 】 【 {} Silver 】")
 }
 
+TYPUS = {
+    'comp_success': "{} invoque des potions de sagesse pour le groupe 【 {} XP 】 【 {} Silver 】",
+}
+
 # non_authorized = message à afficher quand la compétence ne correspond pas à sa classe
 # on_cd = message à afficher quand la compétence est encore en cooldown
 ERRORS = {
