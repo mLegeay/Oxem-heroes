@@ -136,7 +136,7 @@ class GameMember(models.Model):
                 self.save(update_fields=['inventory', 'silver'])
                 message = DONE['recruter'].format(classe.name)
             else:
-                message = ERRORS['not_enough_silver']
+                message = ERRORS['not_enough_silver'].format(classe.price)
 
         return message
 

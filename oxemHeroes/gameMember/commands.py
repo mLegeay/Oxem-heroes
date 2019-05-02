@@ -118,7 +118,7 @@ class Commands(object):
                 message = gameMember.buy_hero(parameters[0].lower())
 
         else:
-            message = command.how_to
+            message = command.how_to + "\n```Css\n [/!\ Lord Typus s'écrit lord_typus /!\]```"
             files = []
             path = "{}/oxemHeroes/classe/static/image".format(settings.DJANGO_ROOT)
             for file in os.listdir(path):

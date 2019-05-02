@@ -163,7 +163,7 @@ DONE = {
 ERRORS = {
     'already_hero': "Vous jouez déjà ce héros.",
     'hero_dne': "Ce héros n'existe pas.",
-    'not_enough_silver': "Tu n'as pas assez de silver pour acheter ce héros.",
+    'not_enough_silver': "Tu n'as pas assez de silver pour recruter ce héros, il coûte {} silver.",
     'not_enough_token': "Tu n'as pas assez de jeton pour changer de héros.",
     'not_own': "Tu ne possède pas ce héros (!acheter).",
 }
