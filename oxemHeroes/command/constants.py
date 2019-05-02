@@ -11,6 +11,7 @@ SKILL_LIST = [
     "aquillon",
     "justice",
     "pillage",
+    "potion",
 ]
 
 ADMIN_DONE = {

@@ -15,6 +15,10 @@ def add_commands(apps, schema_editor):
                            description="Permet de recruter un héros payant parmis ceux disponibles.",
                            how_to="!recruter <heros> (retirer les <> et indiquer le nom du héros de votre choix.")
 
+    Command.objects.create(name="potion",
+                           description="Permet d'utiliser potion de Lord Typus.",
+                           how_to="!potion")
+
 
 class Migration(migrations.Migration):
 

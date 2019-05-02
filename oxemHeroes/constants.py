@@ -12,6 +12,7 @@ COMMAND_LIST = [
     "aquillon",
     "justice",
     "pillage",
+    "potion",
     "giveaway",
     "participer",
     "gagnant",
@@ -30,6 +31,7 @@ SKILL_LIST = [
     "aquillon",
     "justice",
     "pillage",
+    "potion",
 ]
 
 ADMIN_COMMAND_LIST = [

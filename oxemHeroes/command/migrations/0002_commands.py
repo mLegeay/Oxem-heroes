@@ -48,11 +48,11 @@ def add_commands(apps, schema_editor):
                            how_to="!aquillon")
 
     Command.objects.create(name="justice",
-                           description="Permet d'utiliser Justice de Shosizuke.",
+                           description="Permet d'utiliser Justice de Oxem.",
                            how_to="!justice")
 
     Command.objects.create(name="pillage",
-                           description="Permet d'utiliser Pillage de Shosizuke.",
+                           description="Permet d'utiliser Pillage de Talkoran.",
                            how_to="!pillage")
 
     Command.objects.create(name="giveaway",
