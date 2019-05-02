@@ -1,6 +1,7 @@
 COMMAND_LIST = [
     "choisir",
     "jeton",
+    "recruter",
     "silver",
     "silvermax",
     "xp",
@@ -19,6 +20,7 @@ COMMAND_LIST = [
 PLAYER_COMMAND = [
     "choisir",
     "jeton",
+    "recruter",
     "silver",
     "silvermax",
     "xp",

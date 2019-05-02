@@ -1,8 +1,9 @@
 PLAYER_COMMAND = [
     "choisir",
-    "contribution",
     "jeton",
+    "recruter",
     "silver",
+    "silvermax",
     "xp",
 ]
 

@@ -57,28 +57,6 @@ class GameMemberQuerySet(models.QuerySet):
 
         return DONE['choisir'].format(name)
 
-    def buy_hero(self, name):
-        """L'utilisateur recrute un personnage.
-
-           Si la classe existe et que le joueur possède assez de silver,
-           elle est ajouté à l'inventaire héros du joueur.
-
-           return:
-           - str (message indiquant que l'achat c'est bien ou mal déroulée.)
-        """
-
-        classe = Classe.objects.get_classe(name)
-
-        if not isinstance(classe, str):
-            if classe.price <= self.silver:
-                self.inventory['hero'].append(classe.name)
-                self.silver -= classe.price
-                message = DONE['recruter']
-            else:
-                message = ERRORS['not_enough_silver']
-
-        return DONE['choisir'].format(name)
-
 
 class GameMember(models.Model):
     """Modèle des informations sur les joueurs jouant à OxemHeroes."""
@@ -138,6 +116,29 @@ class GameMember(models.Model):
         self.save(update_fields=['experience'])
 
         return int(experience)
+
+    def buy_hero(self, name):
+        """L'utilisateur recrute un personnage.
+
+           Si la classe existe et que le joueur possède assez de silver,
+           elle est ajouté à l'inventaire héros du joueur.
+
+           return:
+           - str (message indiquant que l'achat c'est bien ou mal déroulée.)
+        """
+
+        classe = Classe.objects.get_classe(name)
+
+        if not isinstance(classe, str):
+            if classe.price <= self.silver:
+                self.inventory['hero'].append(classe.name)
+                self.silver -= classe.price
+                self.save(update_fields=['inventory', 'silver'])
+                message = DONE['recruter'].format(classe.name)
+            else:
+                message = ERRORS['not_enough_silver']
+
+        return message
 
     def get_experience(self):
         """Renvoi un message contenant le titre, level et niveau du joueur."""

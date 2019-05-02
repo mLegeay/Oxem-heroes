@@ -44,7 +44,7 @@ class Commands(object):
             files, message = self.choisir(command, gameMember, _message, parameters)
 
         elif command.name == "recruter":
-            files, message = self.get_experience(gameMember)
+            files, message = self.recruter(command, gameMember, parameters)
 
         elif command.name == "xp":
             message = self.get_experience(gameMember)
@@ -68,37 +68,43 @@ class Commands(object):
 
         files = None
 
-        if parameters or gameMember.token != 0:
+        if parameters:
             if parameters[0].lower() in HERO_LIST:
                 if gameMember is None:
                     message = GameMember.objects.create_character(_message, parameters[0].lower())
                 else:
-                    if gameMember.classe.name == parameters[0].lower():
-                        message = ERRORS['already_hero']
+                    if gameMember.token > 0:
+                        if gameMember.classe.name == parameters[0].lower():
+                            message = ERRORS['already_hero']
 
-                    elif parameters[0].lower() in gameMember.inventory['hero']:
-                        message = gameMember.update_character(parameters[0].lower())
+                        elif parameters[0].lower() in gameMember.inventory['hero']:
+                            message = gameMember.update_character(parameters[0].lower())
 
+                        else:
+                            message = ERRORS['not_own']
                     else:
-                        message = ERRORS['not_own']
+                        message = ERRORS['not_enough_token']
 
             else:
                 message = ERRORS['hero_dne']
-
-        elif gameMember is not None and parameters and gameMember.token == 0:
-            message = ERRORS['not_enough_token']
 
         else:
             message = command.how_to
             files = []
             path = "{}/oxemHeroes/classe/static/image".format(settings.DJANGO_ROOT)
-            for file in os.listdir(path):
-                if os.path.isfile(os.path.join(path, file)):
-                    files.append(discord.File(os.path.join(path, file)))
+
+            if gameMember is not None:
+                hero_list = gameMember.inventory['hero']
+
+            else:
+                hero_list = FREE_HERO_LIST
+
+            for each in hero_list:
+                files.append(discord.File(os.path.join(path, "{}.png".format(each))))
 
         return files, message
 
-    def recruter(self, command, gameMember, _message, parameters):
+    def recruter(self, command, gameMember, parameters):
         """Permet d'acheter un héro et l'ajouter à sa liste de héros possédés.
 
            Retourne un message et des DiscordFiles si l'utilisateur souhaite découvrir
@@ -109,7 +115,7 @@ class Commands(object):
 
         if parameters:
             if parameters[0].lower() in HERO_LIST:
-                message = gameMember.buy_hero()
+                message = gameMember.buy_hero(parameters[0].lower())
 
         else:
             message = command.how_to

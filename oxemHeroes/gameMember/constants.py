@@ -126,10 +126,18 @@ LEVEL_LIST = {
 }
 
 # Liste des héros jouables
+FREE_HERO_LIST = [
+    "oxem",
+    "shosizuke",
+    "talkoran",
+]
+
+# Liste des héros jouables
 HERO_LIST = [
     "oxem",
     "shosizuke",
     "talkoran",
+    "lord_typus",
 ]
 
 # choisir : message de choix de héros

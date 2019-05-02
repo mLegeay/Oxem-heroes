@@ -126,6 +126,7 @@ LEVEL_LIST = {
 COMMAND_LIST = [
     "choisir",
     "jeton",
+    "recruter",
     "silver",
     "silvermax",
     "xp",
