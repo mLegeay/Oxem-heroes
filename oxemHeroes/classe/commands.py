@@ -158,12 +158,11 @@ class Commands(object):
         """Compétence de lord typus.
 
            Lord Typus active un bonus de 30% à l'xp globale
-
-           variable:
-           - Tuple member_list : liste des membres du serveur.
         """
 
-        Game.objects.alter_xp(30)
+        if Game.objects.get_bonusxp() == 0:
+            Game.objects.alter_xp(30)
+
         self.message = TYPUS['comp_success'].format(self.gameMember.member.name,
                                                     int(self.experience * (1 + Game.objects.get_bonusxp() / 100)),
                                                     self.silver)

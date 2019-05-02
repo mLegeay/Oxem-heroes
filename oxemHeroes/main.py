@@ -3,6 +3,7 @@
 import asyncio
 
 from django.conf import settings
+from django.utils import timezone
 
 import discord
 from discord.ext import commands
@@ -12,6 +13,8 @@ from oxemHeroes.constants import (ADMIN_COMMAND_LIST, COMMAND_LIST, ERRORS,
 from oxemHeroes.classe.commands import Commands as c_classe
 from oxemHeroes.command.commands import Commands as c_command
 from oxemHeroes.command.models import Command
+from oxemHeroes.commandHistory.models import CommandHistory
+from oxemHeroes.game.models import Game
 from oxemHeroes.gameMember.commands import Commands as c_gameMember
 from oxemHeroes.gameMember.models import GameMember
 from oxemHeroes.giveAway.commands import Commands as c_giveAway
@@ -34,6 +37,12 @@ async def on_message(message):
 
     if not message.content.startswith('%'):
         return
+
+    bonus_xp = CommandHistory.objects.filter(command=Command.objects.from_name("potion"))
+
+    if bonus_xp is not None:
+        if (timezone.now() - bonus_xp.latest("last_used").last_used).total_seconds()//60 > 45 and Game.objects.get_bonusxp() == 30:
+            Game.objects.alter_xp(0)
 
     command = message.content[1:].split(' ')[0]
     parameters = message.content[1:].split(' ')
